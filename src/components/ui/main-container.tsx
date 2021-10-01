@@ -4,6 +4,7 @@ import { Grid, Box } from '@chakra-ui/react';
 const MainContainer: FC = ({ children }) => {
   return (
     <Grid
+      mt="5rem"
       overflowY="auto"
       paddingX={{ base: '3', lg: 'none' }}
       as="main"
@@ -12,15 +13,15 @@ const MainContainer: FC = ({ children }) => {
       templateRows="50px 1fr 50px"
       templateAreas={{
         base: `
-        '.'
-        'main'
-        '.'
-        `,
+      '.'
+      'main'
+      '.'
+      `,
         lg: `
-        '. . .'
-        '. main .'
-        '. . .'
-        `,
+      '. . .'
+      '. main .'
+      '. . .'
+      `,
       }}
     >
       <Box gridArea="main">{children}</Box>

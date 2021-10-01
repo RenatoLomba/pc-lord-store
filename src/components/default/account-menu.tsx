@@ -20,7 +20,7 @@ const AccountMenu: FC = () => {
         close={closeAccountMenu}
         header="Conta"
         isOpen={isAccountMenuOpen}
-        placement="left"
+        placement="right"
       >
         <div>Hello world</div>
       </Drawer>

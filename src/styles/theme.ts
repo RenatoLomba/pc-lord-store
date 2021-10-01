@@ -25,18 +25,19 @@ const styles = {
       height: '100%',
     },
     body: {
-      minHeight: '100vh',
-      overflow: 'auto',
+      height: '100vh',
+      overflow: 'hidden',
+      position: 'relative',
 
       bg: mode('gray.100', 'gray.800')(props),
     },
-    'body::-webkit-scrollbar': {
+    '::-webkit-scrollbar': {
       width: '10px',
     },
-    'body::-webkit-scrollbar-track': {
+    '::-webkit-scrollbar-track': {
       bgColor: 'transparent',
     },
-    'body::-webkit-scrollbar-thumb': {
+    '::-webkit-scrollbar-thumb': {
       background: 'secondary.light',
       borderRadius: '10px',
     },

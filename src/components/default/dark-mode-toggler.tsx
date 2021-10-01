@@ -6,8 +6,6 @@ const DarkModeToggler = () => {
 
   return (
     <Switch
-      position={{ base: 'fixed', lg: 'unset' }}
-      bottom={{ base: '20px', lg: 'unset' }}
       isChecked={colorMode === 'dark'}
       onChange={toggleColorMode}
       size="lg"

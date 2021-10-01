@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import type { GetStaticProps, NextPage } from 'next';
 import Head from 'next/head';
 import { MainContainer } from '../components/ui/main-container';
 import { APP_NAME } from '../utils/constants';
 import { request } from '../utils/request';
-import { Box, Heading, SimpleGrid, VStack } from '@chakra-ui/react';
+import { Heading, SimpleGrid, VStack } from '@chakra-ui/react';
 import { ProductCard } from '../components/ui/product-card';
 import { currency } from '../utils/formatter';
 
@@ -25,10 +25,6 @@ type HomeProps = {
 };
 
 const Home: NextPage<HomeProps> = ({ products }) => {
-  useEffect(() => {
-    console.log(products);
-  }, []);
-
   return (
     <>
       <Head>

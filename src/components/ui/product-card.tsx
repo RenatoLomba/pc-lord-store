@@ -1,4 +1,5 @@
 import React, { FC } from 'react';
+import NextLink from 'next/link';
 import {
   Box,
   VStack,
@@ -6,11 +7,13 @@ import {
   Heading,
   HStack,
   Text,
-  Button,
   Icon,
   useColorModeValue,
+  Badge,
+  Link,
 } from '@chakra-ui/react';
 import { MdAdd } from 'react-icons/md';
+import { Btn } from './btn';
 
 type Product = {
   name: string;
@@ -18,11 +21,10 @@ type Product = {
   image: string;
   countInStock: number;
   slug: string;
-  rating: number;
 };
 
 const ProductCard: FC<{ product: Product }> = ({
-  product: { name, priceFormatted, image },
+  product: { name, priceFormatted, image, countInStock, slug },
 }) => {
   return (
     <VStack
@@ -33,26 +35,33 @@ const ProductCard: FC<{ product: Product }> = ({
       h="auto"
       justifyContent="space-between"
     >
-      <Image src={image} />
-      <Box flex="1">
-        <Box p="3">
-          <Heading textAlign="center" fontWeight={600} size="sm">
-            {name}
-          </Heading>
-        </Box>
-        <HStack p="0 0 0.5rem 0.5rem" gridGap="4" justifyContent="center">
-          <Text>{priceFormatted}</Text>
-          <Button
-            bgColor="secondary.def"
-            color="white"
-            _hover={{ bgColor: 'secondary.light' }}
-            _focus={{ outline: 0 }}
-            _active={{ transform: 'scale(0.9)' }}
-          >
+      <NextLink href={`/product/${slug}`} passHref>
+        <Link
+          _hover={{
+            textDecor: 'none',
+            bgColor: 'gray.300',
+          }}
+          _focus={{ outline: 0 }}
+          flex="1"
+        >
+          <Image src={image} />
+          <Box p="3">
+            <Heading textAlign="center" fontWeight={600} size="sm">
+              {name}
+            </Heading>
+          </Box>
+        </Link>
+      </NextLink>
+      <HStack p="0 0 0.5rem 0.5rem" gridGap="4" justifyContent="center">
+        <Text>{priceFormatted}</Text>
+        {countInStock > 0 ? (
+          <Btn buttonStyle="secondary">
             <Icon as={MdAdd} w={6} h={6} />
-          </Button>
-        </HStack>
-      </Box>
+          </Btn>
+        ) : (
+          <Badge colorScheme="red">Sem estoque</Badge>
+        )}
+      </HStack>
     </VStack>
   );
 };
