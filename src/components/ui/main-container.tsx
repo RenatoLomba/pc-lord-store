@@ -4,6 +4,8 @@ import { Grid, Box } from '@chakra-ui/react';
 const MainContainer: FC = ({ children }) => {
   return (
     <Grid
+      overflowY="auto"
+      paddingX={{ base: '3', lg: 'none' }}
       as="main"
       h="100%"
       templateColumns={{ base: '1fr', lg: '200px 1fr 200px' }}

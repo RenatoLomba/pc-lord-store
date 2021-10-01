@@ -1,4 +1,5 @@
 import { extendTheme, ThemeConfig } from '@chakra-ui/react';
+import { mode, StyleFunctionProps } from '@chakra-ui/theme-tools';
 
 const colors = {
   primary: {
@@ -19,17 +20,33 @@ const config: ThemeConfig = {
 };
 
 const styles = {
-  global: {
+  global: (props: StyleFunctionProps) => ({
     '#__next': {
       height: '100%',
     },
     body: {
-      height: '100vh',
-      overflow: 'hidden',
+      minHeight: '100vh',
+      overflow: 'auto',
+
+      bg: mode('gray.100', 'gray.800')(props),
     },
-  },
+    'body::-webkit-scrollbar': {
+      width: '10px',
+    },
+    'body::-webkit-scrollbar-track': {
+      bgColor: 'transparent',
+    },
+    'body::-webkit-scrollbar-thumb': {
+      background: 'secondary.light',
+      borderRadius: '10px',
+    },
+  }),
 };
 
-const theme = extendTheme({ colors, config, styles });
+const theme = extendTheme({
+  colors,
+  config,
+  styles,
+});
 
 export { theme };
