@@ -12,6 +12,21 @@ const colors = {
     light: '#666ad1',
     dark: '#001970',
   },
+  danger: {
+    def: '#e53935',
+    light: '#ff6f60',
+    dark: '#ab000d',
+  },
+  warning: {
+    def: '#ffd600',
+    light: '#ffff52',
+    dark: '#c7a500',
+  },
+  success: {
+    def: '#00e676',
+    light: '#66ffa6',
+    dark: '#00b248',
+  },
 };
 
 const config: ThemeConfig = {
@@ -25,8 +40,8 @@ const styles = {
       height: '100%',
     },
     body: {
-      height: '100vh',
-      overflow: 'hidden',
+      minHeight: '100vh',
+      overflow: 'auto',
       position: 'relative',
 
       bg: mode('gray.100', 'gray.800')(props),

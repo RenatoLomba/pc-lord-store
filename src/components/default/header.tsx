@@ -10,21 +10,25 @@ const Header: FC = () => {
     <>
       <Box
         as="header"
-        h="5rem"
+        h={{ base: '7rem', lg: '5rem' }}
         w="100%"
         bgColor="primary.dark"
         color="white"
         position="fixed"
         top="0"
         left="0"
+        boxShadow="0px 2px 4px -1px rgb(0 0 0 / 20%), 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%)"
+        zIndex={999}
       >
         <Flex
           as="nav"
           w="100%"
           h="100%"
+          flexDir={{ base: 'column', lg: 'row' }}
           justifyContent="space-between"
           alignItems="center"
           paddingX="4"
+          paddingY={{ base: '2', lg: '0' }}
         >
           <NextLink href="/" passHref>
             <Link fontSize="2xl" _focus={{ outline: 0 }}>

@@ -2,12 +2,13 @@ import React, { FC } from 'react';
 import { Button, ButtonProps } from '@chakra-ui/react';
 
 type BtnProps = ButtonProps & {
-  buttonStyle?: 'primary' | 'secondary';
+  buttonStyle?: 'primary' | 'secondary' | 'danger' | 'warning' | 'success';
 };
 
 const Btn: FC<BtnProps> = ({ children, buttonStyle = 'primary', ...rest }) => {
   return (
     <Button
+      textAlign="center"
       bgColor={`${buttonStyle}.def`}
       color="white"
       _hover={{ bgColor: `${buttonStyle}.light` }}

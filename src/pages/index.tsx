@@ -4,9 +4,10 @@ import Head from 'next/head';
 import { MainContainer } from '../components/ui/main-container';
 import { APP_NAME } from '../utils/constants';
 import { request } from '../utils/request';
-import { Heading, SimpleGrid, VStack } from '@chakra-ui/react';
+import { SimpleGrid, VStack } from '@chakra-ui/react';
 import { ProductCard } from '../components/ui/product-card';
 import { currency } from '../utils/formatter';
+import { Title } from '../components/ui/title';
 
 type Product = {
   _id: string;
@@ -31,7 +32,7 @@ const Home: NextPage<HomeProps> = ({ products }) => {
         <title>{APP_NAME} - Inicio</title>
       </Head>
       <MainContainer>
-        <Heading>Conheça nossos produtos</Heading>
+        <Title>Conheça nossos produtos</Title>
         <SimpleGrid
           columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
           spacing={10}
