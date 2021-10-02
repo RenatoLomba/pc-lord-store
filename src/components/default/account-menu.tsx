@@ -1,15 +1,12 @@
-import React, { FC, useState } from 'react';
+import React, { FC } from 'react';
 import { Icon } from '@chakra-ui/react';
 import { MdAccountBox } from 'react-icons/md';
 import { CircleButton } from '../ui/circle-button';
 import { Drawer } from '../ui/drawer';
+import { useMenu } from '../../hooks/useMenu';
 
 const AccountMenu: FC = () => {
-  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
-
-  const closeAccountMenu = () => setIsAccountMenuOpen(false);
-
-  const openAccountMenu = () => setIsAccountMenuOpen(true);
+  const { openAccountMenu, closeAccountMenu, isAccountMenuOpen } = useMenu();
 
   return (
     <>
@@ -17,7 +14,7 @@ const AccountMenu: FC = () => {
         <Icon as={MdAccountBox} w={6} h={6} color="white" />
       </CircleButton>
       <Drawer
-        close={closeAccountMenu}
+        onClose={closeAccountMenu}
         header="Conta"
         isOpen={isAccountMenuOpen}
         placement="right"

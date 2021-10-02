@@ -14,18 +14,23 @@ import {
 } from '@chakra-ui/react';
 import { MdAdd } from 'react-icons/md';
 import { Btn } from './btn';
+import { useCart } from '../../hooks/useCart';
+import { useMenu } from '../../hooks/useMenu';
 
 type Product = {
+  _id: string;
   name: string;
+  price: number;
   priceFormatted: string;
   image: string;
   countInStock: number;
   slug: string;
 };
 
-const ProductCard: FC<{ product: Product }> = ({
-  product: { name, priceFormatted, image, countInStock, slug },
-}) => {
+const ProductCard: FC<{ product: Product }> = ({ product }) => {
+  const { addItem } = useCart();
+  const { openCartMenu } = useMenu();
+
   return (
     <VStack
       overflow="hidden"
@@ -35,7 +40,7 @@ const ProductCard: FC<{ product: Product }> = ({
       h="auto"
       justifyContent="space-between"
     >
-      <NextLink href={`/product/${slug}`} passHref>
+      <NextLink href={`/product/${product.slug}`} passHref>
         <Link
           _hover={{
             textDecor: 'none',
@@ -44,18 +49,24 @@ const ProductCard: FC<{ product: Product }> = ({
           _focus={{ outline: 0 }}
           flex="1"
         >
-          <Image src={image} />
+          <Image src={product.image} />
           <Box p="3">
             <Heading textAlign="center" fontWeight={600} size="sm">
-              {name}
+              {product.name}
             </Heading>
           </Box>
         </Link>
       </NextLink>
       <HStack p="0 0 0.5rem 0.5rem" gridGap="4" justifyContent="center">
-        <Text>{priceFormatted}</Text>
-        {countInStock > 0 ? (
-          <Btn buttonStyle="secondary">
+        <Text>{product.priceFormatted}</Text>
+        {product.countInStock > 0 ? (
+          <Btn
+            buttonStyle="secondary"
+            onClick={() => {
+              addItem({ ...product, qty: 1 });
+              openCartMenu();
+            }}
+          >
             <Icon as={MdAdd} w={6} h={6} />
           </Btn>
         ) : (

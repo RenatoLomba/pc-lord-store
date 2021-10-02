@@ -1,25 +1,28 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import NextLink from 'next/link';
 import Head from 'next/head';
 import {
-  Link,
   Grid,
   Image,
   VStack,
-  Heading,
   Text,
   useColorModeValue,
   Box,
   HStack,
   Badge,
+  Icon,
 } from '@chakra-ui/react';
+import { MdChevronLeft } from 'react-icons/md';
 import { APP_NAME } from '../../utils/constants';
 import { MainContainer } from '../../components/ui/main-container';
 import { request } from '../../utils/request';
 import { currency } from '../../utils/formatter';
 import { PropertyText } from '../../components/ui/property-text';
 import { Btn } from '../../components/ui/btn';
+import { useCart } from '../../hooks/useCart';
+import { Title } from '../../components/ui/title';
+import { useMenu } from '../../hooks/useMenu';
 
 type Product = {
   _id: string;
@@ -42,9 +45,9 @@ type ProductPageProps = {
 };
 
 const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
-  useEffect(() => {
-    console.log(product);
-  }, []);
+  const { addItem } = useCart();
+  const { openCartMenu } = useMenu();
+
   return (
     <>
       <Head>
@@ -54,7 +57,9 @@ const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
       </Head>
       <MainContainer>
         <NextLink href="/" passHref>
-          <Link>Ver mais produtos</Link>
+          <Btn buttonStyle="secondary">
+            <Icon as={MdChevronLeft} w={6} h={6} /> Ver mais
+          </Btn>
         </NextLink>
         <Grid
           gap="6"
@@ -63,9 +68,7 @@ const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
         >
           <Image w="100%" src={product?.image} />
           <VStack as="section" gridGap="4" alignItems="flex-start">
-            <Heading size="lg" mb="6" fontWeight="thin">
-              {product?.name}
-            </Heading>
+            <Title>{product?.name}</Title>
             <PropertyText title="Categoria" text={product?.category} />
             <PropertyText title="Marca" text={product?.brand} />
             <PropertyText
@@ -106,7 +109,16 @@ const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
                   {product?.countInStock}
                 </Badge>
               </HStack>
-              <Btn>ADICIONAR AO CARRINHO</Btn>
+              {product && product.countInStock > 0 && (
+                <Btn
+                  onClick={() => {
+                    addItem({ ...product, qty: 1 });
+                    openCartMenu();
+                  }}
+                >
+                  ADICIONAR AO CARRINHO
+                </Btn>
+              )}
             </VStack>
           </Box>
         </Grid>
