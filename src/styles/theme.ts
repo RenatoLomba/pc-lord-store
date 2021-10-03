@@ -47,14 +47,14 @@ const styles = {
       bg: mode('gray.100', 'gray.800')(props),
     },
     '::-webkit-scrollbar': {
-      width: '10px',
+      width: '5px',
     },
     '::-webkit-scrollbar-track': {
       bgColor: 'transparent',
     },
     '::-webkit-scrollbar-thumb': {
       background: 'secondary.light',
-      borderRadius: '10px',
+      borderRadius: '5px',
     },
   }),
 };
