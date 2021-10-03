@@ -5,16 +5,19 @@ import { theme } from '../styles/theme';
 import { Header } from '../components/default/header';
 import { CartProvider } from '../contexts/cart-context';
 import { MenuProvider } from '../contexts/menu-context';
+import { AuthProvider } from '../contexts/auth-context';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ChakraProvider theme={theme}>
-      <MenuProvider>
-        <CartProvider>
-          <Header />
-          <Component {...pageProps} />
-        </CartProvider>
-      </MenuProvider>
+      <AuthProvider>
+        <MenuProvider>
+          <CartProvider>
+            <Header />
+            <Component {...pageProps} />
+          </CartProvider>
+        </MenuProvider>
+      </AuthProvider>
     </ChakraProvider>
   );
 }

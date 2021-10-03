@@ -111,6 +111,8 @@ const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
               </HStack>
               {product && product.countInStock > 0 && (
                 <Btn
+                  border="1px solid"
+                  borderColor="gray.500"
                   onClick={() => {
                     addItem({ ...product, qty: 1 });
                     openCartMenu();
