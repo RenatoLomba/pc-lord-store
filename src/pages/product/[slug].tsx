@@ -1,6 +1,5 @@
 import React from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
-import NextLink from 'next/link';
 import Head from 'next/head';
 import {
   Grid,
@@ -23,6 +22,7 @@ import { Btn } from '../../components/ui/btn';
 import { useCart } from '../../hooks/useCart';
 import { Title } from '../../components/ui/title';
 import { useMenu } from '../../hooks/useMenu';
+import { useRouter } from 'next/dist/client/router';
 
 type Product = {
   _id: string;
@@ -45,8 +45,11 @@ type ProductPageProps = {
 };
 
 const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
+  const router = useRouter();
   const { addItem } = useCart();
   const { openCartMenu } = useMenu();
+
+  const seeMoreButtonHandler = () => router.push('/');
 
   return (
     <>
@@ -56,11 +59,9 @@ const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
         </title>
       </Head>
       <MainContainer>
-        <NextLink href="/" passHref>
-          <Btn buttonStyle="secondary">
-            <Icon as={MdChevronLeft} w={6} h={6} /> Ver mais
-          </Btn>
-        </NextLink>
+        <Btn onClick={seeMoreButtonHandler} buttonStyle="secondary">
+          <Icon as={MdChevronLeft} w={6} h={6} /> Ver mais
+        </Btn>
         <Grid
           gap="6"
           mt="6"

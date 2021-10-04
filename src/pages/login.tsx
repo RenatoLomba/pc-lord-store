@@ -22,7 +22,11 @@ import { request } from '../utils/request';
 import { getError } from '../utils/get-error';
 import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'next/dist/client/router';
-import { validateEmail, validatePassword } from '../utils/validators';
+import validations, {
+  validateEmail,
+  validatePassword,
+  validateRequiredField,
+} from '../utils/validators';
 
 const LoginPage: NextPage = () => {
   const router = useRouter();
@@ -70,7 +74,17 @@ const LoginPage: NextPage = () => {
                 gridGap="6"
                 m="0 auto"
               >
-                <Field name="email" validate={validateEmail}>
+                <Field
+                  name="email"
+                  validate={(val: string) =>
+                    validations(
+                      val,
+                      'Email',
+                      validateRequiredField,
+                      validateEmail,
+                    )
+                  }
+                >
                   {({ field, form }: { field: any; form: any }) => (
                     <FormControl
                       id="email"
@@ -88,7 +102,17 @@ const LoginPage: NextPage = () => {
                     </FormControl>
                   )}
                 </Field>
-                <Field name="password" validate={validatePassword}>
+                <Field
+                  name="password"
+                  validate={(val: string) =>
+                    validations(
+                      val,
+                      'Senha',
+                      validateRequiredField,
+                      validatePassword,
+                    )
+                  }
+                >
                   {({ field, form }: { field: any; form: any }) => (
                     <FormControl
                       id="password"

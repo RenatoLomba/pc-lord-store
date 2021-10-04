@@ -6,6 +6,7 @@ import { Header } from '../components/default/header';
 import { CartProvider } from '../contexts/cart-context';
 import { MenuProvider } from '../contexts/menu-context';
 import { AuthProvider } from '../contexts/auth-context';
+import { OrderProvider } from '../contexts/order-context';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -13,8 +14,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       <AuthProvider>
         <MenuProvider>
           <CartProvider>
-            <Header />
-            <Component {...pageProps} />
+            <OrderProvider>
+              <Header />
+              <Component {...pageProps} />
+            </OrderProvider>
           </CartProvider>
         </MenuProvider>
       </AuthProvider>

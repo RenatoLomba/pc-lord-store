@@ -27,10 +27,21 @@ import { Btn } from '../components/ui/btn';
 import { MdClearAll } from 'react-icons/md';
 import { currency } from '../utils/formatter';
 import { SelectCount } from '../components/ui/select-count';
+import { useRouter } from 'next/dist/client/router';
+import { useOrder } from '../hooks/useOrder';
 
 const CartPage: NextPage = () => {
+  const router = useRouter();
   const { cartItems, removeItem, clearCart, updateQty } = useCart();
+  const { changeOrderItems } = useOrder();
   const cardStyle = useColorModeValue('white', 'gray.700');
+
+  const checkoutOrderHandler = () => {
+    changeOrderItems(cartItems);
+    clearCart();
+
+    router.push('/shipping');
+  };
 
   return (
     <>
@@ -132,7 +143,9 @@ const CartPage: NextPage = () => {
                       )}
                     </Text>
                   </HStack>
-                  <Btn buttonStyle="success">FINALIZAR PEDIDO</Btn>
+                  <Btn buttonStyle="success" onClick={checkoutOrderHandler}>
+                    FINALIZAR PEDIDO
+                  </Btn>
                 </VStack>
               </Box>
             </Grid>
