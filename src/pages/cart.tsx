@@ -15,7 +15,6 @@ import {
   Grid,
   VStack,
   Box,
-  useColorModeValue,
   HStack,
   Text,
 } from '@chakra-ui/react';
@@ -28,18 +27,12 @@ import { MdClearAll } from 'react-icons/md';
 import { currency } from '../utils/formatter';
 import { SelectCount } from '../components/ui/select-count';
 import { useRouter } from 'next/dist/client/router';
-import { useOrder } from '../hooks/useOrder';
-
+import { Card } from '../components/ui/card';
 const CartPage: NextPage = () => {
   const router = useRouter();
   const { cartItems, removeItem, clearCart, updateQty } = useCart();
-  const { changeOrderItems } = useOrder();
-  const cardStyle = useColorModeValue('white', 'gray.700');
 
   const checkoutOrderHandler = () => {
-    changeOrderItems(cartItems);
-    clearCart();
-
     router.push('/shipping');
   };
 
@@ -123,13 +116,7 @@ const CartPage: NextPage = () => {
                 </Table>
               </VStack>
               <Box as="section">
-                <VStack
-                  p="6"
-                  bgColor={cardStyle}
-                  borderRadius="lg"
-                  w="100%"
-                  gridGap="3"
-                >
+                <Card>
                   <HStack w="100%">
                     <Text as="span" fontWeight="medium" fontSize="xl" w="50%">
                       SUBTOTAL
@@ -146,7 +133,7 @@ const CartPage: NextPage = () => {
                   <Btn buttonStyle="success" onClick={checkoutOrderHandler}>
                     FINALIZAR PEDIDO
                   </Btn>
-                </VStack>
+                </Card>
               </Box>
             </Grid>
           </>

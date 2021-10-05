@@ -8,8 +8,6 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
-  VStack,
-  useColorModeValue,
   useToast,
   HStack,
 } from '@chakra-ui/react';
@@ -28,6 +26,7 @@ import validations, {
   validateStateCode,
 } from '../utils/validators';
 import { useOrder } from '../hooks/useOrder';
+import { Card } from '../components/ui/card';
 
 type AddressInfo = {
   fullname: string;
@@ -46,7 +45,6 @@ const ShippingPage: NextPage<ShippingPage> = ({ username, addressInfo }) => {
   const { loggedUser } = useAuth();
   const { changeAddressInfo } = useOrder();
   const toast = useToast();
-  const cardStyle = useColorModeValue('white', 'gray.700');
 
   const formSubmitHandler = async (values: AddressInfo) => {
     try {
@@ -85,14 +83,7 @@ const ShippingPage: NextPage<ShippingPage> = ({ username, addressInfo }) => {
         >
           {(props) => (
             <Form>
-              <VStack
-                bgColor={cardStyle}
-                w={{ base: '90%', lg: '50%' }}
-                p="3rem"
-                borderRadius="lg"
-                gridGap="6"
-                m="0 auto"
-              >
+              <Card p="3rem" w={{ base: '90%', lg: '50%' }} gridGap="6">
                 <Field
                   name="fullname"
                   validate={(val: string) =>
@@ -304,7 +295,7 @@ const ShippingPage: NextPage<ShippingPage> = ({ username, addressInfo }) => {
                 >
                   Continuar
                 </Btn>
-              </VStack>
+              </Card>
             </Form>
           )}
         </Formik>

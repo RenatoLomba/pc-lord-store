@@ -6,7 +6,6 @@ import {
   Image,
   VStack,
   Text,
-  useColorModeValue,
   Box,
   HStack,
   Badge,
@@ -23,6 +22,7 @@ import { useCart } from '../../hooks/useCart';
 import { Title } from '../../components/ui/title';
 import { useMenu } from '../../hooks/useMenu';
 import { useRouter } from 'next/dist/client/router';
+import { Card } from '../../components/ui/card';
 
 type Product = {
   _id: string;
@@ -79,13 +79,7 @@ const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
             <PropertyText title="Descrição" text={product?.description} />
           </VStack>
           <Box as="section">
-            <VStack
-              p="6"
-              bgColor={useColorModeValue('white', 'gray.700')}
-              borderRadius="lg"
-              w="100%"
-              gridGap="3"
-            >
+            <Card>
               <HStack w="100%">
                 <Text as="span" fontWeight="medium" fontSize="xl" w="50%">
                   Preço
@@ -122,7 +116,7 @@ const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
                   ADICIONAR AO CARRINHO
                 </Btn>
               )}
-            </VStack>
+            </Card>
           </Box>
         </Grid>
       </MainContainer>
