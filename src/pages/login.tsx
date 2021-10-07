@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import NextLink from 'next/link';
@@ -34,6 +34,20 @@ const LoginPage: NextPage = () => {
   const toast = useToast();
   const cardStyle = useColorModeValue('white', 'gray.700');
 
+  const { message, redirect } = router.query;
+
+  useEffect(() => {
+    if (message) {
+      toast({
+        title: 'Erro',
+        description: String(message),
+        status: 'error',
+        variant: 'solid',
+        isClosable: true,
+      });
+    }
+  }, []);
+
   const formSubmitHandler = async (values: {
     email: string;
     password: string;
@@ -42,12 +56,13 @@ const LoginPage: NextPage = () => {
       const { data } = await request.post('auth/login', { ...values });
       loginUser(data.user, data.token);
 
-      router.push('/');
+      router.push(redirect ? `/${String(redirect)}` : '/');
     } catch (ex: any) {
       toast({
         title: ex.response?.data?.error || 'Erro interno',
         description: getError(ex),
         status: 'error',
+        variant: 'solid',
         isClosable: true,
       });
     }
@@ -147,7 +162,12 @@ const LoginPage: NextPage = () => {
                 </Btn>
                 <Text>
                   Ainda não possui uma conta?{' '}
-                  <NextLink href="/register" passHref>
+                  <NextLink
+                    href={
+                      redirect ? `/register?redirect=${redirect}` : '/register'
+                    }
+                    passHref
+                  >
                     <Link color="primary.light" filter="brightness(2)">
                       Registre-se
                     </Link>

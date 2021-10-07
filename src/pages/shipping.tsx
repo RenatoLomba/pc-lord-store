@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
 import nookies from 'nookies';
@@ -46,6 +46,20 @@ const ShippingPage: NextPage<ShippingPage> = ({ username, addressInfo }) => {
   const { changeAddressInfo } = useOrder();
   const toast = useToast();
 
+  const { message } = router.query;
+
+  useEffect(() => {
+    if (message) {
+      toast({
+        title: 'Erro',
+        description: String(message),
+        status: 'error',
+        variant: 'solid',
+        isClosable: true,
+      });
+    }
+  }, []);
+
   const formSubmitHandler = async (values: AddressInfo) => {
     try {
       changeAddressInfo(values);
@@ -56,6 +70,7 @@ const ShippingPage: NextPage<ShippingPage> = ({ username, addressInfo }) => {
         title: ex.response?.data?.error || 'Erro interno',
         description: getError(ex),
         status: 'error',
+        variant: 'solid',
         isClosable: true,
       });
     }
@@ -320,7 +335,7 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
     if (!data?.isValid) {
       return {
         redirect: {
-          destination: '/login?message=Usuário inválido',
+          destination: '/login?message=Usuário inválido&redirect=shipping',
           permanent: false,
         },
       };

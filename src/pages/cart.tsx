@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import NextLink from 'next/link';
@@ -17,6 +17,7 @@ import {
   Box,
   HStack,
   Text,
+  useToast,
 } from '@chakra-ui/react';
 import { APP_NAME } from '../utils/constants';
 import { MainContainer } from '../components/ui/main-container';
@@ -28,9 +29,26 @@ import { currency } from '../utils/formatter';
 import { SelectCount } from '../components/ui/select-count';
 import { useRouter } from 'next/dist/client/router';
 import { Card } from '../components/ui/card';
+import { useOrder } from '../hooks/useOrder';
 const CartPage: NextPage = () => {
   const router = useRouter();
+  const toast = useToast();
   const { cartItems, removeItem, clearCart, updateQty } = useCart();
+  const { clearOrder } = useOrder();
+
+  const { message } = router.query;
+
+  useEffect(() => {
+    if (message) {
+      toast({
+        title: 'Erro',
+        description: String(message),
+        status: 'error',
+        variant: 'solid',
+        isClosable: true,
+      });
+    }
+  }, []);
 
   const checkoutOrderHandler = () => {
     router.push('/shipping');
@@ -49,7 +67,10 @@ const CartPage: NextPage = () => {
             <Grid templateColumns={{ base: '1fr', lg: '3fr 1fr' }}>
               <VStack as="section">
                 <Btn
-                  onClick={clearCart}
+                  onClick={() => {
+                    clearCart();
+                    clearOrder();
+                  }}
                   alignSelf="flex-start"
                   buttonStyle="warning"
                   mb="6"

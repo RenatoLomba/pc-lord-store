@@ -1,8 +1,8 @@
-import { Radio, RadioGroup, VStack } from '@chakra-ui/react';
+import { Radio, RadioGroup, useToast, VStack } from '@chakra-ui/react';
 import { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/dist/client/router';
 import Head from 'next/head';
-import React from 'react';
+import React, { useEffect } from 'react';
 import nookies from 'nookies';
 import { Btn } from '../components/ui/btn';
 import { Card } from '../components/ui/card';
@@ -14,8 +14,23 @@ import { request } from '../utils/request';
 import { getError } from '../utils/get-error';
 
 const PaymentPage: NextPage = () => {
+  const toast = useToast();
   const router = useRouter();
   const { changePaymentMethod, paymentMethod } = useOrder();
+
+  const { message } = router.query;
+
+  useEffect(() => {
+    if (message) {
+      toast({
+        title: 'Erro',
+        description: String(message),
+        status: 'error',
+        variant: 'solid',
+        isClosable: true,
+      });
+    }
+  }, []);
 
   const continueButtonClickHandler = () => {
     router.push('/placeorder');

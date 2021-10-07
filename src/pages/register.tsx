@@ -22,9 +22,9 @@ import { request } from '../utils/request';
 import { getError } from '../utils/get-error';
 import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'next/dist/client/router';
-import {
+import validations, {
   validateEmail,
-  validateName,
+  validateRequiredField,
   validatePassword,
 } from '../utils/validators';
 
@@ -35,14 +35,13 @@ const RegisterPage: NextPage = () => {
   const cardStyle = useColorModeValue('white', 'gray.700');
   const passwordRef = useRef<string>();
 
+  const { redirect } = router.query;
+
   const confirmPasswordValidator = (value: string) => {
-    let error = validatePassword(value);
-    console.log(document.querySelector<HTMLInputElement>('#password')?.value);
-    if (!error) {
-      const passwordsAreEqual =
-        document.querySelector<HTMLInputElement>('#password')?.value === value;
-      error = !passwordsAreEqual ? 'Senhas diferentes' : '';
-    }
+    let error = '';
+    const passwordsAreEqual =
+      document.querySelector<HTMLInputElement>('#password')?.value === value;
+    error = !passwordsAreEqual ? 'Senhas diferentes' : '';
 
     return error;
   };
@@ -56,12 +55,13 @@ const RegisterPage: NextPage = () => {
       const { data } = await request.post('auth/register', { ...values });
       loginUser(data.user, data.token);
 
-      router.push('/');
+      router.push(redirect ? `/${String(redirect)}` : '/');
     } catch (ex: any) {
       toast({
         title: ex.response?.data?.error || 'Erro interno',
         description: getError(ex),
         status: 'error',
+        variant: 'solid',
         isClosable: true,
       });
     }
@@ -88,7 +88,12 @@ const RegisterPage: NextPage = () => {
                 gridGap="6"
                 m="0 auto"
               >
-                <Field name="name" validate={validateName}>
+                <Field
+                  name="name"
+                  validate={(v: string) =>
+                    validations(v, 'Nome', validateRequiredField)
+                  }
+                >
                   {({ field, form }: { field: any; form: any }) => (
                     <FormControl
                       id="name"
@@ -106,7 +111,17 @@ const RegisterPage: NextPage = () => {
                     </FormControl>
                   )}
                 </Field>
-                <Field name="email" validate={validateEmail}>
+                <Field
+                  name="email"
+                  validate={(v: string) =>
+                    validations(
+                      v,
+                      'Email',
+                      validateRequiredField,
+                      validateEmail,
+                    )
+                  }
+                >
                   {({ field, form }: { field: any; form: any }) => (
                     <FormControl
                       id="email"
@@ -124,7 +139,17 @@ const RegisterPage: NextPage = () => {
                     </FormControl>
                   )}
                 </Field>
-                <Field name="password" validate={validatePassword}>
+                <Field
+                  name="password"
+                  validate={(v: string) =>
+                    validations(
+                      v,
+                      'Senha',
+                      validateRequiredField,
+                      validatePassword,
+                    )
+                  }
+                >
                   {({ field, form }: { field: any; form: any }) => (
                     <FormControl
                       id="password"
@@ -151,7 +176,15 @@ const RegisterPage: NextPage = () => {
                 </Field>
                 <Field
                   name="confirmPassword"
-                  validate={confirmPasswordValidator}
+                  validate={(v: string) =>
+                    validations(
+                      v,
+                      'Confirmar senha',
+                      validateRequiredField,
+                      validatePassword,
+                      confirmPasswordValidator,
+                    )
+                  }
                 >
                   {({ field, form }: { field: any; form: any }) => (
                     <FormControl
@@ -190,7 +223,10 @@ const RegisterPage: NextPage = () => {
                 </Btn>
                 <Text>
                   Já possui uma conta?{' '}
-                  <NextLink href="/login" passHref>
+                  <NextLink
+                    href={redirect ? `/login?redirect=${redirect}` : '/login'}
+                    passHref
+                  >
                     <Link color="primary.light" filter="brightness(2)">
                       Logue-se
                     </Link>

@@ -17,6 +17,7 @@ type OrderContextData = {
   paymentMethod?: string;
   changeAddressInfo: (info: AddressInfo) => void;
   changePaymentMethod: (payment: string) => void;
+  clearOrder: () => void;
 };
 
 const OrderContext = createContext({} as OrderContextData);
@@ -35,10 +36,24 @@ const OrderProvider: FC = ({ children }) => {
     nookies.set(null, PAYMENT_METHOD_COOKIE, payment);
   };
 
+  const clearOrder = () => {
+    setAddressInfo(undefined);
+    setPaymentMethod('');
+    nookies.destroy(null, ADDRESS_INFO_COOKIE);
+    nookies.destroy(null, PAYMENT_METHOD_COOKIE);
+  };
+
   useEffect(() => {
     const { PAYMENT_METHOD } = nookies.get(null);
     if (!PAYMENT_METHOD) return;
     setPaymentMethod(PAYMENT_METHOD);
+  }, []);
+
+  useEffect(() => {
+    const { ADDRESS_INFO } = nookies.get(null);
+    if (!ADDRESS_INFO) return;
+    const addressInfo = JSON.parse(ADDRESS_INFO);
+    setAddressInfo(addressInfo);
   }, []);
 
   return (
@@ -48,6 +63,7 @@ const OrderProvider: FC = ({ children }) => {
         changeAddressInfo,
         paymentMethod,
         changePaymentMethod,
+        clearOrder,
       }}
     >
       {children}
