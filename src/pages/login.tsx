@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import NextLink from 'next/link';
@@ -22,13 +22,31 @@ import { request } from '../utils/request';
 import { getError } from '../utils/get-error';
 import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'next/dist/client/router';
-import { validateEmail, validatePassword } from '../utils/validators';
+import validations, {
+  validateEmail,
+  validatePassword,
+  validateRequiredField,
+} from '../utils/validators';
 
 const LoginPage: NextPage = () => {
   const router = useRouter();
   const { loginUser } = useAuth();
   const toast = useToast();
   const cardStyle = useColorModeValue('white', 'gray.700');
+
+  const { message, redirect } = router.query;
+
+  useEffect(() => {
+    if (message) {
+      toast({
+        title: 'Erro',
+        description: String(message),
+        status: 'error',
+        variant: 'solid',
+        isClosable: true,
+      });
+    }
+  }, []);
 
   const formSubmitHandler = async (values: {
     email: string;
@@ -38,12 +56,13 @@ const LoginPage: NextPage = () => {
       const { data } = await request.post('auth/login', { ...values });
       loginUser(data.user, data.token);
 
-      router.push('/');
+      router.push(redirect ? `/${String(redirect)}` : '/');
     } catch (ex: any) {
       toast({
         title: ex.response?.data?.error || 'Erro interno',
         description: getError(ex),
         status: 'error',
+        variant: 'solid',
         isClosable: true,
       });
     }
@@ -70,7 +89,17 @@ const LoginPage: NextPage = () => {
                 gridGap="6"
                 m="0 auto"
               >
-                <Field name="email" validate={validateEmail}>
+                <Field
+                  name="email"
+                  validate={(val: string) =>
+                    validations(
+                      val,
+                      'Email',
+                      validateRequiredField,
+                      validateEmail,
+                    )
+                  }
+                >
                   {({ field, form }: { field: any; form: any }) => (
                     <FormControl
                       id="email"
@@ -88,7 +117,17 @@ const LoginPage: NextPage = () => {
                     </FormControl>
                   )}
                 </Field>
-                <Field name="password" validate={validatePassword}>
+                <Field
+                  name="password"
+                  validate={(val: string) =>
+                    validations(
+                      val,
+                      'Senha',
+                      validateRequiredField,
+                      validatePassword,
+                    )
+                  }
+                >
                   {({ field, form }: { field: any; form: any }) => (
                     <FormControl
                       id="password"
@@ -123,7 +162,12 @@ const LoginPage: NextPage = () => {
                 </Btn>
                 <Text>
                   Ainda não possui uma conta?{' '}
-                  <NextLink href="/register" passHref>
+                  <NextLink
+                    href={
+                      redirect ? `/register?redirect=${redirect}` : '/register'
+                    }
+                    passHref
+                  >
                     <Link color="primary.light" filter="brightness(2)">
                       Registre-se
                     </Link>

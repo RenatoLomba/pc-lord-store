@@ -1,13 +1,11 @@
 import React from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
-import NextLink from 'next/link';
 import Head from 'next/head';
 import {
   Grid,
   Image,
   VStack,
   Text,
-  useColorModeValue,
   Box,
   HStack,
   Badge,
@@ -23,6 +21,8 @@ import { Btn } from '../../components/ui/btn';
 import { useCart } from '../../hooks/useCart';
 import { Title } from '../../components/ui/title';
 import { useMenu } from '../../hooks/useMenu';
+import { useRouter } from 'next/dist/client/router';
+import { Card } from '../../components/ui/card';
 
 type Product = {
   _id: string;
@@ -45,8 +45,11 @@ type ProductPageProps = {
 };
 
 const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
+  const router = useRouter();
   const { addItem } = useCart();
   const { openCartMenu } = useMenu();
+
+  const seeMoreButtonHandler = () => router.push('/');
 
   return (
     <>
@@ -56,11 +59,9 @@ const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
         </title>
       </Head>
       <MainContainer>
-        <NextLink href="/" passHref>
-          <Btn buttonStyle="secondary">
-            <Icon as={MdChevronLeft} w={6} h={6} /> Ver mais
-          </Btn>
-        </NextLink>
+        <Btn onClick={seeMoreButtonHandler} buttonStyle="secondary">
+          <Icon as={MdChevronLeft} w={6} h={6} /> Ver mais
+        </Btn>
         <Grid
           gap="6"
           mt="6"
@@ -78,13 +79,7 @@ const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
             <PropertyText title="Descrição" text={product?.description} />
           </VStack>
           <Box as="section">
-            <VStack
-              p="6"
-              bgColor={useColorModeValue('white', 'gray.700')}
-              borderRadius="lg"
-              w="100%"
-              gridGap="3"
-            >
+            <Card>
               <HStack w="100%">
                 <Text as="span" fontWeight="medium" fontSize="xl" w="50%">
                   Preço
@@ -121,7 +116,7 @@ const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
                   ADICIONAR AO CARRINHO
                 </Btn>
               )}
-            </VStack>
+            </Card>
           </Box>
         </Grid>
       </MainContainer>

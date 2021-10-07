@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { GetStaticProps, NextPage } from 'next';
 import Head from 'next/head';
 import { MainContainer } from '../components/ui/main-container';
 import { APP_NAME } from '../utils/constants';
 import { request } from '../utils/request';
-import { SimpleGrid, VStack } from '@chakra-ui/react';
+import { SimpleGrid, useToast, VStack } from '@chakra-ui/react';
 import { ProductCard } from '../components/ui/product-card';
 import { currency } from '../utils/formatter';
 import { Title } from '../components/ui/title';
+import { useRouter } from 'next/dist/client/router';
 
 type Product = {
   _id: string;
@@ -26,6 +27,22 @@ type HomeProps = {
 };
 
 const Home: NextPage<HomeProps> = ({ products }) => {
+  const router = useRouter();
+  const toast = useToast();
+  const { message } = router.query;
+
+  useEffect(() => {
+    if (message) {
+      toast({
+        title: 'Erro',
+        description: String(message),
+        status: 'error',
+        variant: 'solid',
+        isClosable: true,
+      });
+    }
+  }, []);
+
   return (
     <>
       <Head>

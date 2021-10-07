@@ -8,12 +8,14 @@ type BtnProps = ButtonProps & {
 const Btn: FC<BtnProps> = ({ children, buttonStyle = 'primary', ...rest }) => {
   return (
     <Button
+      overflow="hidden"
       textAlign="center"
       bgColor={`${buttonStyle}.def`}
       color="white"
       _hover={{ bgColor: `${buttonStyle}.light` }}
       _focus={{ outline: 0 }}
       _active={{ transform: 'scale(0.9)' }}
+      position="relative"
       {...rest}
     >
       {children}

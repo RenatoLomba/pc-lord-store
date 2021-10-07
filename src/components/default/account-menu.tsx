@@ -9,11 +9,13 @@ import { useAuth } from '../../hooks/useAuth';
 import { Btn } from '../ui/btn';
 import { useCart } from '../../hooks/useCart';
 import { useRouter } from 'next/dist/client/router';
+import { useOrder } from '../../hooks/useOrder';
 
 const AccountMenu: FC = () => {
   const router = useRouter();
   const { loggedUser, logoutUser } = useAuth();
   const { clearCart } = useCart();
+  const { clearOrder } = useOrder();
   const { openAccountMenu, closeAccountMenu, isAccountMenuOpen } = useMenu();
 
   const returnItemButton = () => {
@@ -31,6 +33,7 @@ const AccountMenu: FC = () => {
   const logoutButtonHandler = () => {
     logoutUser();
     clearCart();
+    clearOrder();
     closeAccountMenu();
     router.push('/login');
   };

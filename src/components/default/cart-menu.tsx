@@ -23,11 +23,13 @@ import { Btn } from '../ui/btn';
 import { useMenu } from '../../hooks/useMenu';
 import { SelectCount } from '../ui/select-count';
 import { useRouter } from 'next/dist/client/router';
+import { useOrder } from '../../hooks/useOrder';
 
 const CartMenu = () => {
   const router = useRouter();
   const { cartItems, removeItem, clearCart, updateQty } = useCart();
   const { openCartMenu, closeCartMenu, isCartMenuOpen } = useMenu();
+  const { clearOrder } = useOrder();
 
   const buttonCartDetailsHandler = () => {
     router.push('/cart');
@@ -70,7 +72,10 @@ const CartMenu = () => {
           <>
             <Center mb="6">
               <Btn
-                onClick={clearCart}
+                onClick={() => {
+                  clearCart();
+                  clearOrder();
+                }}
                 justifySelf="center"
                 buttonStyle="warning"
               >

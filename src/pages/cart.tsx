@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import NextLink from 'next/link';
@@ -15,9 +15,9 @@ import {
   Grid,
   VStack,
   Box,
-  useColorModeValue,
   HStack,
   Text,
+  useToast,
 } from '@chakra-ui/react';
 import { APP_NAME } from '../utils/constants';
 import { MainContainer } from '../components/ui/main-container';
@@ -27,10 +27,32 @@ import { Btn } from '../components/ui/btn';
 import { MdClearAll } from 'react-icons/md';
 import { currency } from '../utils/formatter';
 import { SelectCount } from '../components/ui/select-count';
-
+import { useRouter } from 'next/dist/client/router';
+import { Card } from '../components/ui/card';
+import { useOrder } from '../hooks/useOrder';
 const CartPage: NextPage = () => {
+  const router = useRouter();
+  const toast = useToast();
   const { cartItems, removeItem, clearCart, updateQty } = useCart();
-  const cardStyle = useColorModeValue('white', 'gray.700');
+  const { clearOrder } = useOrder();
+
+  const { message } = router.query;
+
+  useEffect(() => {
+    if (message) {
+      toast({
+        title: 'Erro',
+        description: String(message),
+        status: 'error',
+        variant: 'solid',
+        isClosable: true,
+      });
+    }
+  }, []);
+
+  const checkoutOrderHandler = () => {
+    router.push('/shipping');
+  };
 
   return (
     <>
@@ -45,7 +67,10 @@ const CartPage: NextPage = () => {
             <Grid templateColumns={{ base: '1fr', lg: '3fr 1fr' }}>
               <VStack as="section">
                 <Btn
-                  onClick={clearCart}
+                  onClick={() => {
+                    clearCart();
+                    clearOrder();
+                  }}
                   alignSelf="flex-start"
                   buttonStyle="warning"
                   mb="6"
@@ -112,13 +137,7 @@ const CartPage: NextPage = () => {
                 </Table>
               </VStack>
               <Box as="section">
-                <VStack
-                  p="6"
-                  bgColor={cardStyle}
-                  borderRadius="lg"
-                  w="100%"
-                  gridGap="3"
-                >
+                <Card>
                   <HStack w="100%">
                     <Text as="span" fontWeight="medium" fontSize="xl" w="50%">
                       SUBTOTAL
@@ -132,8 +151,10 @@ const CartPage: NextPage = () => {
                       )}
                     </Text>
                   </HStack>
-                  <Btn buttonStyle="success">FINALIZAR PEDIDO</Btn>
-                </VStack>
+                  <Btn buttonStyle="success" onClick={checkoutOrderHandler}>
+                    FINALIZAR PEDIDO
+                  </Btn>
+                </Card>
               </Box>
             </Grid>
           </>

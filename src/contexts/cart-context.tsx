@@ -58,6 +58,7 @@ const CartProvider: FC = ({ children }) => {
       toast({
         title: 'Erro',
         description: 'Produto não encontrado no carrinho.',
+        variant: 'solid',
         status: 'error',
       });
       return;
@@ -75,6 +76,7 @@ const CartProvider: FC = ({ children }) => {
       toast({
         title: 'Erro',
         description: 'Produto não encontrado no carrinho.',
+        variant: 'solid',
         status: 'error',
       });
       return;
