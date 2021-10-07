@@ -24,7 +24,7 @@ const OrderContext = createContext({} as OrderContextData);
 
 const OrderProvider: FC = ({ children }) => {
   const [addressInfo, setAddressInfo] = useState<AddressInfo>();
-  const [paymentMethod, setPaymentMethod] = useState('Mercado Pago');
+  const [paymentMethod, setPaymentMethod] = useState('');
 
   const changeAddressInfo = (info: AddressInfo) => {
     setAddressInfo(info);

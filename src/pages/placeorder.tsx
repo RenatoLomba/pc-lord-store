@@ -229,7 +229,8 @@ const PlaceorderPage: NextPage = () => {
 };
 
 const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const { USER_TOKEN, CART_ITEMS, ADDRESS_INFO } = nookies.get(ctx);
+  const { USER_TOKEN, CART_ITEMS, ADDRESS_INFO, PAYMENT_METHOD } =
+    nookies.get(ctx);
 
   if (!USER_TOKEN) {
     return {
@@ -250,6 +251,15 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       redirect: {
         destination: '/shipping?message=Endereço de entrega não informado',
+        permanent: false,
+      },
+    };
+  }
+
+  if (!PAYMENT_METHOD) {
+    return {
+      redirect: {
+        destination: '/payment?message=Forma de pagamento não informada',
         permanent: false,
       },
     };

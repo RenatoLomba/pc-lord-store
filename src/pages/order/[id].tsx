@@ -219,7 +219,10 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   if (!USER_TOKEN) {
     return {
-      redirect: { destination: '/login?redirect=placeorder', permanent: false },
+      redirect: {
+        destination: `/login?redirect=order/${params.id}`,
+        permanent: false,
+      },
     };
   }
 

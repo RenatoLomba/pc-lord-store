@@ -9,10 +9,6 @@ const request = axios.create({
   baseURL: API_URL,
 });
 
-const reqFromApi = axios.create({
-  baseURL: '/api',
-});
-
 const reqFromMercadoPago = axios.create({
   baseURL: API_MERCADO_PAGO_URL,
   headers: {
@@ -20,4 +16,4 @@ const reqFromMercadoPago = axios.create({
   },
 });
 
-export { request, reqFromMercadoPago, reqFromApi };
+export { request, reqFromMercadoPago };
