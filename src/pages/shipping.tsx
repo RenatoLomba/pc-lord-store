@@ -64,7 +64,7 @@ const ShippingPage: NextPage<ShippingPage> = ({ username, addressInfo }) => {
     try {
       changeAddressInfo(values);
 
-      router.push('/payment');
+      router.push('/placeorder');
     } catch (ex: any) {
       toast({
         title: ex.response?.data?.error || 'Erro interno',

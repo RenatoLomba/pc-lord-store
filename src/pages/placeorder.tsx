@@ -79,7 +79,7 @@ const PlaceorderPage: NextPage = () => {
           postalCode: addressInfo?.postalCode,
           country: addressInfo?.state,
         },
-        paymentMethod: paymentMethod?.id,
+        paymentMethod: paymentMethod?.id || 'PayPal',
         itemsPrice: Number(itemsPrice.toFixed(2)),
         shippingPrice:
           shippingPrice === 0 ? 0.01 : Number(shippingPrice.toFixed(2)),
@@ -96,9 +96,6 @@ const PlaceorderPage: NextPage = () => {
       setIsLoading(true);
 
       const savedOrder = await saveOrder();
-
-      // const createdMPOrder = await createOrderMercadoPago();
-      // console.log(createdMPOrder);
 
       clearCart();
       clearOrder();
@@ -130,12 +127,6 @@ const PlaceorderPage: NextPage = () => {
                 Endereço de entrega
               </Heading>
               <Text fontSize="lg">{fullAddress}</Text>
-            </Card>
-            <Card alignItems="flex-start">
-              <Heading size="xl" fontWeight="medium">
-                Forma de pagamento
-              </Heading>
-              <Text fontSize="lg">{paymentMethod?.name}</Text>
             </Card>
             <Card alignItems="flex-start">
               <Heading size="xl" fontWeight="medium">
@@ -238,8 +229,7 @@ const PlaceorderPage: NextPage = () => {
 };
 
 const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const { USER_TOKEN, CART_ITEMS, ADDRESS_INFO, PAYMENT_METHOD } =
-    nookies.get(ctx);
+  const { USER_TOKEN, CART_ITEMS, ADDRESS_INFO } = nookies.get(ctx);
 
   if (!USER_TOKEN) {
     return {
@@ -260,15 +250,6 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
     return {
       redirect: {
         destination: '/shipping?message=Endereço de entrega não informado',
-        permanent: false,
-      },
-    };
-  }
-
-  if (!PAYMENT_METHOD) {
-    return {
-      redirect: {
-        destination: '/payment?message=Forma de pagamento não informada',
         permanent: false,
       },
     };

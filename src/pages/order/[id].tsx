@@ -15,6 +15,8 @@ import {
   HStack,
   Badge,
   Flex,
+  useToast,
+  Box,
 } from '@chakra-ui/react';
 import { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
@@ -25,9 +27,9 @@ import { MainContainer } from '../../components/ui/main-container';
 import { Title } from '../../components/ui/title';
 import { APP_NAME } from '../../utils/constants';
 import { currency } from '../../utils/formatter';
-import { Btn } from '../../components/ui/btn';
 import { getError } from '../../utils/get-error';
 import { request } from '../../utils/request';
+import { useRouter } from 'next/dist/client/router';
 
 type OrderItem = {
   _id: string;
@@ -79,14 +81,26 @@ type PaypalButtonsProps = {
   onApprove: (data: any, actions: any) => Promise<any>;
 };
 
+declare global {
+  interface Window {
+    paypal: {
+      Buttons: (props: PaypalButtonsProps) => { render: (ref: any) => void };
+    };
+  }
+}
+
 const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
+  const toast = useToast();
+  const router = useRouter();
   const orderIsDelivered = order.isDelivered;
   const orderIsPaid = order.isPaid;
   const [loaded, setLoaded] = useState(false);
 
-  let paypalRef = useRef();
+  let paypalRef = useRef() as any;
 
   useEffect(() => {
+    if (order.isPaid) return;
+
     const script = document.createElement('script');
     const id =
       'AaL9G4AoMLHtAJJ6CJ5DHhMjKEjq0V9-FTx_7yovCKuxupPt7S7FWhi9_mwD-6_LHDTzT5w7CWAo6vnL';
@@ -105,19 +119,49 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
             .Buttons({
               createOrder: (data, actions) => {
                 return actions.order.create({
-                  purchase_units: order.orderItems.map((item) => ({
-                    description: item.description,
-                    amount: {
-                      currency_code: 'BRL',
-                      value: item.price,
+                  purchase_units: [
+                    {
+                      description: `Order ${order._id}`,
+                      amount: {
+                        currency_code: 'BRL',
+                        value: order.totalPrice,
+                      },
                     },
-                  })),
+                  ],
                 });
               },
               onApprove: async (data, actions) => {
-                const order = await actions.order.capture();
+                const orderPaypal = await actions.order.capture();
 
-                console.log(order);
+                console.log(orderPaypal);
+                const { USER_TOKEN } = nookies.get(null);
+
+                if (!USER_TOKEN) {
+                  toast({
+                    variant: 'solid',
+                    status: 'error',
+                    isClosable: true,
+                    title: 'Erro',
+                    description: 'Usuário não está autenticado',
+                  });
+                  return;
+                }
+
+                try {
+                  await request.put(`orders/${order._id}/pay`, undefined, {
+                    headers: { Authorization: 'Bearer ' + USER_TOKEN },
+                  });
+                } catch (err) {
+                  toast({
+                    variant: 'solid',
+                    status: 'error',
+                    isClosable: true,
+                    title: 'Erro interno',
+                    description: getError(err),
+                  });
+                }
+
+                router.reload();
               },
             } as PaypalButtonsProps)
             .render(paypalRef);
@@ -246,7 +290,7 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
                 {order.totalPriceFormatted}
               </Text>
             </HStack>
-            {!order.isPaid && <div ref={(v) => (paypalRef = v)} />}
+            {!order.isPaid && <Box w="100%" ref={(v) => (paypalRef = v)} />}
           </Card>
         </Grid>
       </MainContainer>
