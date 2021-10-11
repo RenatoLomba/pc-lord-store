@@ -25,6 +25,8 @@ type Product = {
   image: string;
   countInStock: number;
   slug: string;
+  description: string;
+  category: string;
 };
 
 const ProductCard: FC<{ product: Product }> = ({ product }) => {
