@@ -19,6 +19,8 @@ type Product = {
   countInStock: number;
   slug: string;
   rating: number;
+  description: string;
+  category: string;
 };
 
 type HomeProps = {
