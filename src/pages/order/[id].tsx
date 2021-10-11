@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Grid,
   Heading,
@@ -37,11 +37,15 @@ type OrderItem = {
   priceFormatted: string;
   qty: number;
   slug: string;
+  description: string;
 };
 
 type Address = {
-  fullName: string;
+  firstName: string;
+  lastName: string;
+  state: string;
   address: string;
+  number: number;
   city: string;
   postalCode: string;
   country: string;
@@ -70,9 +74,59 @@ type OrderPageProps = {
   order: Order;
 };
 
+type PaypalButtonsProps = {
+  createOrder: (data: any, actions: any) => any;
+  onApprove: (data: any, actions: any) => Promise<any>;
+};
+
 const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
   const orderIsDelivered = order.isDelivered;
   const orderIsPaid = order.isPaid;
+  const [loaded, setLoaded] = useState(false);
+
+  let paypalRef = useRef();
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    const id =
+      'AaL9G4AoMLHtAJJ6CJ5DHhMjKEjq0V9-FTx_7yovCKuxupPt7S7FWhi9_mwD-6_LHDTzT5w7CWAo6vnL';
+    script.src = `https://www.paypal.com/sdk/js?currency=BRL&client-id=${id}`;
+
+    script.addEventListener('load', () => setLoaded(true));
+
+    document.body.appendChild(script);
+  }, []);
+
+  useEffect(() => {
+    if (loaded) {
+      const loadPaymentButtons = () => {
+        setTimeout(() => {
+          window.paypal
+            .Buttons({
+              createOrder: (data, actions) => {
+                return actions.order.create({
+                  purchase_units: order.orderItems.map((item) => ({
+                    description: item.description,
+                    amount: {
+                      currency_code: 'BRL',
+                      value: item.price,
+                    },
+                  })),
+                });
+              },
+              onApprove: async (data, actions) => {
+                const order = await actions.order.capture();
+
+                console.log(order);
+              },
+            } as PaypalButtonsProps)
+            .render(paypalRef);
+        });
+      };
+
+      loadPaymentButtons();
+    }
+  }, [loaded]);
 
   return (
     <>
@@ -192,14 +246,7 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
                 {order.totalPriceFormatted}
               </Text>
             </HStack>
-            <Btn
-              w="100%"
-              buttonStyle="primary"
-              border="1px solid"
-              borderColor="gray.500"
-            >
-              Concluir pedido
-            </Btn>
+            {!order.isPaid && <div ref={(v) => (paypalRef = v)} />}
           </Card>
         </Grid>
       </MainContainer>
@@ -257,7 +304,7 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
         ...item,
         priceFormatted: currency.format(item.price),
       })),
-      fullAddress: `${orderData.shippingAddress?.fullName}, ${orderData.shippingAddress?.address} - ${orderData.shippingAddress?.city}, ${orderData.shippingAddress?.country} - ${orderData.shippingAddress?.postalCode}`,
+      fullAddress: `${orderData.shippingAddress?.firstName} ${orderData.shippingAddress?.lastName}, ${orderData.shippingAddress?.address} nº ${orderData.shippingAddress?.number} - ${orderData.shippingAddress?.city}, ${orderData.shippingAddress?.state} - ${orderData.shippingAddress?.postalCode}`,
       itemsPriceFormatted: currency.format(orderData.itemsPrice),
       shippingPriceFormatted: currency.format(orderData.shippingPrice),
       taxPriceFormatted: currency.format(orderData.taxPrice),

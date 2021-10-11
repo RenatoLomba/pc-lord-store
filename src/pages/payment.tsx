@@ -25,18 +25,23 @@ const PaymentPage: NextPage = () => {
   const { message } = router.query;
 
   const paymentMethods = payment_methods
-    ? payment_methods
-        .filter((pm) => pm.status === 'active')
-        .sort((a, b) => {
-          if (a.name < b.name) {
-            return -1;
-          }
-          if (a.name > b.name) {
-            return 1;
-          }
-          return 0;
-        })
+    ? payment_methods.sort((a, b) => {
+        if (a.name < b.name) {
+          return -1;
+        }
+        if (a.name > b.name) {
+          return 1;
+        }
+        return 0;
+      })
     : [];
+
+  const handleChangePaymentMethod = (value: string) => {
+    const pM = paymentMethods.find((pm) => pm.id === value);
+    if (pM) {
+      changePaymentMethod({ id: pM?.id, name: pM?.name });
+    }
+  };
 
   useEffect(() => {
     if (message) {
@@ -87,8 +92,8 @@ const PaymentPage: NextPage = () => {
             display="flex"
             flexDir="column"
             gridGap="6"
-            onChange={changePaymentMethod}
-            value={paymentMethod}
+            onChange={handleChangePaymentMethod}
+            value={paymentMethod?.id}
           >
             {paymentMethods.map((pm) => (
               <Radio key={pm.id} size="lg" value={pm.id} colorScheme="purple">

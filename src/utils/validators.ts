@@ -19,11 +19,6 @@ const validateNumeric: Validator = (value, fieldName) =>
 const validatePostalCode: Validator = (value, fieldName) =>
   validator.isPostalCode(value, 'BR') ? '' : `${fieldName} inválido`;
 
-const validateStateCode: Validator = (value, fieldName) =>
-  value.length === 2
-    ? ''
-    : `${fieldName} deve conter apenas 2 caracteres (sigla)`;
-
 const validations = (
   value: string,
   fieldName: string,
@@ -45,7 +40,6 @@ export {
   validateRequiredField,
   validateNumeric,
   validatePostalCode,
-  validateStateCode,
 };
 
 export default validations;

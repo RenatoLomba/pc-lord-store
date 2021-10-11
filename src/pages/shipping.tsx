@@ -17,19 +17,18 @@ import { Btn } from '../components/ui/btn';
 import { Title } from '../components/ui/title';
 import { request } from '../utils/request';
 import { getError } from '../utils/get-error';
-import { useAuth } from '../hooks/useAuth';
 import { useRouter } from 'next/dist/client/router';
 import validations, {
   validateNumeric,
   validatePostalCode,
   validateRequiredField,
-  validateStateCode,
 } from '../utils/validators';
 import { useOrder } from '../hooks/useOrder';
 import { Card } from '../components/ui/card';
 
 type AddressInfo = {
-  fullname: string;
+  firstName: string;
+  lastName: string;
   address: string;
   number: string;
   district: string;
@@ -38,15 +37,16 @@ type AddressInfo = {
   postalCode: string;
 };
 
-type ShippingPage = { username?: string; addressInfo?: AddressInfo };
+type ShippingPage = { username: string; addressInfo?: AddressInfo };
 
 const ShippingPage: NextPage<ShippingPage> = ({ username, addressInfo }) => {
   const router = useRouter();
-  const { loggedUser } = useAuth();
   const { changeAddressInfo } = useOrder();
   const toast = useToast();
 
   const { message } = router.query;
+
+  const [userFirstName, userLastName] = username?.split(' ');
 
   useEffect(() => {
     if (message) {
@@ -86,44 +86,77 @@ const ShippingPage: NextPage<ShippingPage> = ({ username, addressInfo }) => {
         <Formik
           onSubmit={formSubmitHandler}
           initialValues={{
-            fullname:
-              addressInfo?.fullname || username || loggedUser?.name || '',
+            firstName: userFirstName || '',
+            lastName: userLastName || '',
             address: addressInfo?.address || '',
             city: addressInfo?.city || '',
             district: addressInfo?.district || '',
             number: addressInfo?.number || '',
             postalCode: addressInfo?.postalCode || '',
-            state: addressInfo?.state || 'SP',
+            state: addressInfo?.state || 'São Paulo',
           }}
         >
           {(props) => (
             <Form>
               <Card p="3rem" w={{ base: '90%', lg: '50%' }} gridGap="6">
-                <Field
-                  name="fullname"
-                  validate={(val: string) =>
-                    validations(val, 'Nome Completo', validateRequiredField)
-                  }
-                >
-                  {({ field, form }: { field: any; form: any }) => (
-                    <FormControl
-                      id="fullname"
-                      isInvalid={form.errors.fullname && form.touched.fullname}
-                    >
-                      <FormLabel
-                        fontSize="lg"
-                        fontWeight="medium"
-                        htmlFor="fullname"
+                <HStack w="100%" alignItems="center" justifyContent="center">
+                  <Field
+                    name="firstName"
+                    validate={(val: string) =>
+                      validations(val, 'Primeiro nome', validateRequiredField)
+                    }
+                  >
+                    {({ field, form }: { field: any; form: any }) => (
+                      <FormControl
+                        id="firstName"
+                        w="50%"
+                        isInvalid={
+                          form.errors.firstName && form.touched.firstName
+                        }
                       >
-                        Nome completo
-                      </FormLabel>
-                      <Input {...field} placeholder="Seu nome" />
-                      <FormErrorMessage>
-                        {form.errors.fullname}
-                      </FormErrorMessage>
-                    </FormControl>
-                  )}
-                </Field>
+                        <FormLabel
+                          fontSize="lg"
+                          fontWeight="medium"
+                          htmlFor="firstName"
+                        >
+                          Primeiro Nome
+                        </FormLabel>
+                        <Input {...field} placeholder="Seu nome" />
+                        <FormErrorMessage>
+                          {form.errors.firstName}
+                        </FormErrorMessage>
+                      </FormControl>
+                    )}
+                  </Field>
+                  <Field
+                    name="lastName"
+                    validate={(val: string) =>
+                      validations(val, 'Último nome', validateRequiredField)
+                    }
+                  >
+                    {({ field, form }: { field: any; form: any }) => (
+                      <FormControl
+                        id="lastName"
+                        w="50%"
+                        isInvalid={
+                          form.errors.lastName && form.touched.lastName
+                        }
+                      >
+                        <FormLabel
+                          fontSize="lg"
+                          fontWeight="medium"
+                          htmlFor="lastName"
+                        >
+                          Último Nome
+                        </FormLabel>
+                        <Input {...field} placeholder="Seu nome" />
+                        <FormErrorMessage>
+                          {form.errors.lastName}
+                        </FormErrorMessage>
+                      </FormControl>
+                    )}
+                  </Field>
+                </HStack>
                 <HStack w="100%" alignItems="center" justifyContent="center">
                   <Field
                     name="address"
@@ -274,12 +307,7 @@ const ShippingPage: NextPage<ShippingPage> = ({ username, addressInfo }) => {
                   <Field
                     name="state"
                     validate={(val: string) =>
-                      validations(
-                        val,
-                        'Estado',
-                        validateRequiredField,
-                        validateStateCode,
-                      )
+                      validations(val, 'Estado', validateRequiredField)
                     }
                   >
                     {({ field, form }: { field: any; form: any }) => (

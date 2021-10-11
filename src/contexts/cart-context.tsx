@@ -12,6 +12,8 @@ type CartItem = {
   image: string;
   priceFormatted: string;
   countInStock: number;
+  description: string;
+  category: string;
 };
 
 type CartContextData = {
