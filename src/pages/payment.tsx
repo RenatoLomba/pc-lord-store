@@ -1,4 +1,4 @@
-import { Radio, RadioGroup, useToast, VStack } from '@chakra-ui/react';
+import { HStack, Radio, RadioGroup, useToast } from '@chakra-ui/react';
 import { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/dist/client/router';
 import Head from 'next/head';
@@ -12,13 +12,36 @@ import { useOrder } from '../hooks/useOrder';
 import { APP_NAME } from '../utils/constants';
 import { request } from '../utils/request';
 import { getError } from '../utils/get-error';
+import { usePaymentMethods } from '../hooks/usePaymentMethods';
+import { Loading } from '../components/ui/loading';
 
 const PaymentPage: NextPage = () => {
   const toast = useToast();
   const router = useRouter();
   const { changePaymentMethod, paymentMethod } = useOrder();
+  const { payment_methods, isLoading, isError, errorMessage } =
+    usePaymentMethods();
 
   const { message } = router.query;
+
+  const paymentMethods = payment_methods
+    ? payment_methods.sort((a, b) => {
+        if (a.name < b.name) {
+          return -1;
+        }
+        if (a.name > b.name) {
+          return 1;
+        }
+        return 0;
+      })
+    : [];
+
+  const handleChangePaymentMethod = (value: string) => {
+    const pM = paymentMethods.find((pm) => pm.id === value);
+    if (pM) {
+      changePaymentMethod({ id: pM?.id, name: pM?.name });
+    }
+  };
 
   useEffect(() => {
     if (message) {
@@ -31,6 +54,18 @@ const PaymentPage: NextPage = () => {
       });
     }
   }, []);
+
+  useEffect(() => {
+    if (isError) {
+      toast({
+        title: 'Erro',
+        description: errorMessage,
+        status: 'error',
+        variant: 'solid',
+        isClosable: true,
+      });
+    }
+  }, [isError]);
 
   const continueButtonClickHandler = () => {
     router.push('/placeorder');
@@ -49,30 +84,23 @@ const PaymentPage: NextPage = () => {
         <Title textAlign="center">
           Escolha a forma de pagamento mais adequada
         </Title>
-        <RadioGroup onChange={changePaymentMethod} value={paymentMethod}>
-          <Card
-            p="3rem"
-            w={{ base: '90%', lg: '50%' }}
+        <Card p="3rem" w={{ base: '90%', lg: '50%' }}>
+          {isLoading && <Loading />}
+          <RadioGroup
+            w="100%"
+            h="100%"
+            display="flex"
+            flexDir="column"
             gridGap="6"
-            alignItems="flex-start"
+            onChange={handleChangePaymentMethod}
+            value={paymentMethod?.id}
           >
-            <Radio size="lg" value="Boleto" colorScheme="purple">
-              Boleto
-            </Radio>
-            <Radio size="lg" value="Cartão de Crédito" colorScheme="purple">
-              Cartão de Crédito
-            </Radio>
-            <Radio size="lg" value="Mercado Pago" colorScheme="purple">
-              Mercado Pago
-            </Radio>
-            <VStack w="100%" gridGap="2">
-              <Btn
-                onClick={continueButtonClickHandler}
-                buttonStyle="success"
-                w="50%"
-              >
-                Continuar
-              </Btn>
+            {paymentMethods.map((pm) => (
+              <Radio key={pm.id} size="lg" value={pm.id} colorScheme="purple">
+                {pm.name}
+              </Radio>
+            ))}
+            <HStack w="100%" gridGap="2" justifyContent="space-between">
               <Btn
                 onClick={backButtonClickHandler}
                 buttonStyle="danger"
@@ -80,9 +108,16 @@ const PaymentPage: NextPage = () => {
               >
                 Voltar
               </Btn>
-            </VStack>
-          </Card>
-        </RadioGroup>
+              <Btn
+                onClick={continueButtonClickHandler}
+                buttonStyle="success"
+                w="50%"
+              >
+                Continuar
+              </Btn>
+            </HStack>
+          </RadioGroup>
+        </Card>
       </MainContainer>
     </>
   );

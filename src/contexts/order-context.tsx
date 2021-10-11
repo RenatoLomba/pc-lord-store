@@ -2,8 +2,14 @@ import React, { createContext, FC, useEffect, useState } from 'react';
 import nookies from 'nookies';
 import { ADDRESS_INFO_COOKIE, PAYMENT_METHOD_COOKIE } from '../utils/constants';
 
+type PaymentMethod = {
+  id: string;
+  name: string;
+};
+
 type AddressInfo = {
-  fullname: string;
+  firstName: string;
+  lastName: string;
   address: string;
   number: string;
   district: string;
@@ -14,9 +20,9 @@ type AddressInfo = {
 
 type OrderContextData = {
   addressInfo?: AddressInfo;
-  paymentMethod?: string;
+  paymentMethod?: PaymentMethod;
   changeAddressInfo: (info: AddressInfo) => void;
-  changePaymentMethod: (payment: string) => void;
+  changePaymentMethod: (payment: PaymentMethod) => void;
   clearOrder: () => void;
 };
 
@@ -24,21 +30,21 @@ const OrderContext = createContext({} as OrderContextData);
 
 const OrderProvider: FC = ({ children }) => {
   const [addressInfo, setAddressInfo] = useState<AddressInfo>();
-  const [paymentMethod, setPaymentMethod] = useState('Mercado Pago');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>();
 
   const changeAddressInfo = (info: AddressInfo) => {
     setAddressInfo(info);
     nookies.set(null, ADDRESS_INFO_COOKIE, JSON.stringify(info));
   };
 
-  const changePaymentMethod = (payment: string) => {
+  const changePaymentMethod = (payment: PaymentMethod) => {
     setPaymentMethod(payment);
-    nookies.set(null, PAYMENT_METHOD_COOKIE, payment);
+    nookies.set(null, PAYMENT_METHOD_COOKIE, JSON.stringify(payment));
   };
 
   const clearOrder = () => {
     setAddressInfo(undefined);
-    setPaymentMethod('');
+    setPaymentMethod(undefined);
     nookies.destroy(null, ADDRESS_INFO_COOKIE);
     nookies.destroy(null, PAYMENT_METHOD_COOKIE);
   };
@@ -46,7 +52,7 @@ const OrderProvider: FC = ({ children }) => {
   useEffect(() => {
     const { PAYMENT_METHOD } = nookies.get(null);
     if (!PAYMENT_METHOD) return;
-    setPaymentMethod(PAYMENT_METHOD);
+    setPaymentMethod(JSON.parse(PAYMENT_METHOD));
   }, []);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Grid,
   Heading,
@@ -15,6 +15,8 @@ import {
   HStack,
   Badge,
   Flex,
+  useToast,
+  Box,
 } from '@chakra-ui/react';
 import { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
@@ -25,9 +27,10 @@ import { MainContainer } from '../../components/ui/main-container';
 import { Title } from '../../components/ui/title';
 import { APP_NAME } from '../../utils/constants';
 import { currency } from '../../utils/formatter';
-import { Btn } from '../../components/ui/btn';
 import { getError } from '../../utils/get-error';
 import { request } from '../../utils/request';
+import { useRouter } from 'next/dist/client/router';
+import axios from 'axios';
 
 type OrderItem = {
   _id: string;
@@ -37,11 +40,15 @@ type OrderItem = {
   priceFormatted: string;
   qty: number;
   slug: string;
+  description: string;
 };
 
 type Address = {
-  fullName: string;
+  firstName: string;
+  lastName: string;
+  state: string;
   address: string;
+  number: number;
   city: string;
   postalCode: string;
   country: string;
@@ -70,9 +77,123 @@ type OrderPageProps = {
   order: Order;
 };
 
+type PaypalButtonsProps = {
+  createOrder: (data: any, actions: any) => any;
+  onApprove: (data: any, actions: any) => Promise<any>;
+};
+
+declare global {
+  interface Window {
+    paypal: {
+      Buttons: (props: PaypalButtonsProps) => { render: (ref: any) => void };
+    };
+  }
+}
+
 const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
+  const toast = useToast();
+  const router = useRouter();
   const orderIsDelivered = order.isDelivered;
   const orderIsPaid = order.isPaid;
+  const [loaded, setLoaded] = useState(false);
+
+  let paypalRef = useRef() as any;
+
+  useEffect(() => {
+    if (order.isPaid) return;
+
+    const getClientId = async (): Promise<string> => {
+      const { USER_TOKEN } = nookies.get(null);
+      const { data } = await axios.get('/api/get_client_id', {
+        headers: { Authorization: 'Bearer ' + USER_TOKEN },
+      });
+      return data.clientId;
+    };
+
+    const createPayPalScript = async () => {
+      const clientId = await getClientId();
+
+      const script = document.createElement('script');
+      script.src = `https://www.paypal.com/sdk/js?currency=BRL&client-id=${clientId}`;
+
+      script.addEventListener('load', () => setLoaded(true));
+
+      document.body.appendChild(script);
+    };
+
+    try {
+      createPayPalScript();
+    } catch (err) {
+      toast({
+        variant: 'solid',
+        status: 'error',
+        isClosable: true,
+        title: 'Erro interno',
+        description: getError(err),
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (loaded) {
+      const loadPaymentButtons = () => {
+        setTimeout(() => {
+          window.paypal
+            .Buttons({
+              createOrder: (data, actions) => {
+                return actions.order.create({
+                  purchase_units: [
+                    {
+                      description: `Order ${order._id}`,
+                      amount: {
+                        currency_code: 'BRL',
+                        value: order.totalPrice,
+                      },
+                    },
+                  ],
+                });
+              },
+              onApprove: async (data, actions) => {
+                const orderPaypal = await actions.order.capture();
+
+                console.log(orderPaypal);
+                const { USER_TOKEN } = nookies.get(null);
+
+                if (!USER_TOKEN) {
+                  toast({
+                    variant: 'solid',
+                    status: 'error',
+                    isClosable: true,
+                    title: 'Erro',
+                    description: 'Usuário não está autenticado',
+                  });
+                  return;
+                }
+
+                try {
+                  await request.put(`orders/${order._id}/pay`, undefined, {
+                    headers: { Authorization: 'Bearer ' + USER_TOKEN },
+                  });
+                } catch (err) {
+                  toast({
+                    variant: 'solid',
+                    status: 'error',
+                    isClosable: true,
+                    title: 'Erro interno',
+                    description: getError(err),
+                  });
+                }
+
+                router.reload();
+              },
+            } as PaypalButtonsProps)
+            .render(paypalRef);
+        });
+      };
+
+      loadPaymentButtons();
+    }
+  }, [loaded]);
 
   return (
     <>
@@ -92,7 +213,10 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
               <Text fontSize="lg">{order.fullAddress}</Text>
               <Flex gridGap="3" alignItems="center">
                 Status:{' '}
-                <Badge colorScheme={orderIsDelivered ? 'green' : 'red'}>
+                <Badge
+                  fontSize="1rem"
+                  colorScheme={orderIsDelivered ? 'green' : 'red'}
+                >
                   {orderIsDelivered ? 'Entregue' : 'Não entregue'}
                 </Badge>
               </Flex>
@@ -104,8 +228,13 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
               <Text fontSize="lg">{order.paymentMethod}</Text>
               <Flex gridGap="3" alignItems="center">
                 Status:{' '}
-                <Badge colorScheme={orderIsPaid ? 'green' : 'red'}>
-                  {orderIsPaid ? 'Pago' : 'Não pago'}
+                <Badge
+                  fontSize="1rem"
+                  colorScheme={orderIsPaid ? 'green' : 'red'}
+                >
+                  {orderIsPaid
+                    ? 'Pagamento processado'
+                    : 'Pagamento não processado'}
                 </Badge>
               </Flex>
             </Card>
@@ -192,14 +321,7 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
                 {order.totalPriceFormatted}
               </Text>
             </HStack>
-            <Btn
-              w="100%"
-              buttonStyle="primary"
-              border="1px solid"
-              borderColor="gray.500"
-            >
-              Concluir pedido
-            </Btn>
+            {!order.isPaid && <Box w="100%" ref={(v) => (paypalRef = v)} />}
           </Card>
         </Grid>
       </MainContainer>
@@ -219,7 +341,10 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   if (!USER_TOKEN) {
     return {
-      redirect: { destination: '/login?redirect=placeorder', permanent: false },
+      redirect: {
+        destination: `/login?redirect=order/${params.id}`,
+        permanent: false,
+      },
     };
   }
 
@@ -254,7 +379,7 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
         ...item,
         priceFormatted: currency.format(item.price),
       })),
-      fullAddress: `${orderData.shippingAddress?.fullName}, ${orderData.shippingAddress?.address} - ${orderData.shippingAddress?.city}, ${orderData.shippingAddress?.country} - ${orderData.shippingAddress?.postalCode}`,
+      fullAddress: `${orderData.shippingAddress?.firstName} ${orderData.shippingAddress?.lastName}, ${orderData.shippingAddress?.address} nº ${orderData.shippingAddress?.number} - ${orderData.shippingAddress?.city}, ${orderData.shippingAddress?.state} - ${orderData.shippingAddress?.postalCode}`,
       itemsPriceFormatted: currency.format(orderData.itemsPrice),
       shippingPriceFormatted: currency.format(orderData.shippingPrice),
       taxPriceFormatted: currency.format(orderData.taxPrice),

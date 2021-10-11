@@ -14,7 +14,6 @@ import {
   Image,
   HStack,
   useToast,
-  CircularProgress,
 } from '@chakra-ui/react';
 import { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
@@ -31,6 +30,7 @@ import { Btn } from '../components/ui/btn';
 import { useRouter } from 'next/dist/client/router';
 import { getError } from '../utils/get-error';
 import { request } from '../utils/request';
+import { Loading } from '../components/ui/loading';
 
 const PlaceorderPage: NextPage = () => {
   const router = useRouter();
@@ -39,7 +39,7 @@ const PlaceorderPage: NextPage = () => {
   const { addressInfo, paymentMethod, clearOrder } = useOrder();
   const [isLoading, setIsLoading] = useState(false);
 
-  const fullAddress = `${addressInfo?.fullname}, ${addressInfo?.address}, Nº ${addressInfo?.number} - ${addressInfo?.city}, ${addressInfo?.state} - ${addressInfo?.postalCode}`;
+  const fullAddress = `${addressInfo?.firstName} ${addressInfo?.lastName}, ${addressInfo?.address}, nº ${addressInfo?.number} - ${addressInfo?.city}, ${addressInfo?.state} - ${addressInfo?.postalCode}`;
 
   const itemsPrice = cartItems.reduce(
     (prev, curr) => prev + curr.price * curr.qty,
@@ -56,42 +56,50 @@ const PlaceorderPage: NextPage = () => {
   const totalPrice = itemsPrice + shippingPrice + taxPrice;
   const totalPriceFormatted = currency.format(totalPrice);
 
+  const saveOrder = async () => {
+    const { USER_TOKEN } = nookies.get(null);
+    const { data } = await request.post(
+      'orders',
+      {
+        orderItems: cartItems.map((item) => ({
+          name: item.name,
+          image: item.image,
+          price: item.price,
+          description: item.description,
+          qty: item.qty,
+          slug: item.slug,
+        })),
+        shippingAddress: {
+          firstName: addressInfo?.firstName,
+          lastName: addressInfo?.lastName,
+          address: addressInfo?.address,
+          number: addressInfo?.number,
+          city: addressInfo?.city,
+          state: addressInfo?.state,
+          postalCode: addressInfo?.postalCode,
+          country: addressInfo?.state,
+        },
+        paymentMethod: paymentMethod?.id || 'PayPal',
+        itemsPrice: Number(itemsPrice.toFixed(2)),
+        shippingPrice:
+          shippingPrice === 0 ? 0.01 : Number(shippingPrice.toFixed(2)),
+        taxPrice: Number(taxPrice.toFixed(2)),
+        totalPrice: Number(totalPrice.toFixed(2)),
+      },
+      { headers: { Authorization: 'Bearer ' + USER_TOKEN } },
+    );
+    return data;
+  };
+
   const finishOrderHandler = async () => {
     try {
       setIsLoading(true);
-      const { USER_TOKEN } = nookies.get(null);
-      const { data } = await request.post(
-        'orders',
-        {
-          orderItems: cartItems.map((item) => ({
-            name: item.name,
-            image: item.image,
-            price: item.price,
-            qty: item.qty,
-            slug: item.slug,
-          })),
-          shippingAddress: {
-            fullName: addressInfo?.fullname,
-            address: `${addressInfo?.address
-              .trim()
-              .replaceAll(',', '')}, ${addressInfo?.number.trim()}`,
-            city: addressInfo?.city,
-            postalCode: addressInfo?.postalCode,
-            country: addressInfo?.state,
-          },
-          paymentMethod,
-          itemsPrice,
-          shippingPrice:
-            shippingPrice === 0 ? 0.01 : Number(shippingPrice.toFixed(2)),
-          taxPrice: Number(taxPrice.toFixed(2)),
-          totalPrice: Number(totalPrice.toFixed(2)),
-        },
-        { headers: { Authorization: 'Bearer ' + USER_TOKEN } },
-      );
+
+      const savedOrder = await saveOrder();
 
       clearCart();
       clearOrder();
-      router.push(`/order/${data._id}`);
+      router.push(`/order/${savedOrder._id}`);
     } catch (err: any) {
       toast({
         title: err.response?.data?.error || 'Erro interno',
@@ -119,12 +127,6 @@ const PlaceorderPage: NextPage = () => {
                 Endereço de entrega
               </Heading>
               <Text fontSize="lg">{fullAddress}</Text>
-            </Card>
-            <Card alignItems="flex-start">
-              <Heading size="xl" fontWeight="medium">
-                Forma de pagamento
-              </Heading>
-              <Text fontSize="lg">{paymentMethod}</Text>
             </Card>
             <Card alignItems="flex-start">
               <Heading size="xl" fontWeight="medium">
@@ -216,11 +218,9 @@ const PlaceorderPage: NextPage = () => {
               borderColor="gray.500"
               onClick={finishOrderHandler}
             >
-              Concluir pedido
+              Criar pedido
             </Btn>
-            {isLoading && (
-              <CircularProgress isIndeterminate color="secondary.def" />
-            )}
+            {isLoading && <Loading />}
           </Card>
         </Grid>
       </MainContainer>
