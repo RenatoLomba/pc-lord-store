@@ -30,6 +30,7 @@ import { currency } from '../../utils/formatter';
 import { getError } from '../../utils/get-error';
 import { request } from '../../utils/request';
 import { useRouter } from 'next/dist/client/router';
+import axios from 'axios';
 
 type OrderItem = {
   _id: string;
@@ -101,14 +102,36 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
   useEffect(() => {
     if (order.isPaid) return;
 
-    const script = document.createElement('script');
-    const id =
-      'AaL9G4AoMLHtAJJ6CJ5DHhMjKEjq0V9-FTx_7yovCKuxupPt7S7FWhi9_mwD-6_LHDTzT5w7CWAo6vnL';
-    script.src = `https://www.paypal.com/sdk/js?currency=BRL&client-id=${id}`;
+    const getClientId = async (): Promise<string> => {
+      const { USER_TOKEN } = nookies.get(null);
+      const { data } = await axios.get('/api/get_client_id', {
+        headers: { Authorization: 'Bearer ' + USER_TOKEN },
+      });
+      return data.clientId;
+    };
 
-    script.addEventListener('load', () => setLoaded(true));
+    const createPayPalScript = async () => {
+      const clientId = await getClientId();
 
-    document.body.appendChild(script);
+      const script = document.createElement('script');
+      script.src = `https://www.paypal.com/sdk/js?currency=BRL&client-id=${clientId}`;
+
+      script.addEventListener('load', () => setLoaded(true));
+
+      document.body.appendChild(script);
+    };
+
+    try {
+      createPayPalScript();
+    } catch (err) {
+      toast({
+        variant: 'solid',
+        status: 'error',
+        isClosable: true,
+        title: 'Erro interno',
+        description: getError(err),
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -190,7 +213,10 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
               <Text fontSize="lg">{order.fullAddress}</Text>
               <Flex gridGap="3" alignItems="center">
                 Status:{' '}
-                <Badge colorScheme={orderIsDelivered ? 'green' : 'red'}>
+                <Badge
+                  fontSize="1rem"
+                  colorScheme={orderIsDelivered ? 'green' : 'red'}
+                >
                   {orderIsDelivered ? 'Entregue' : 'Não entregue'}
                 </Badge>
               </Flex>
@@ -202,8 +228,13 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
               <Text fontSize="lg">{order.paymentMethod}</Text>
               <Flex gridGap="3" alignItems="center">
                 Status:{' '}
-                <Badge colorScheme={orderIsPaid ? 'green' : 'red'}>
-                  {orderIsPaid ? 'Pago' : 'Não pago'}
+                <Badge
+                  fontSize="1rem"
+                  colorScheme={orderIsPaid ? 'green' : 'red'}
+                >
+                  {orderIsPaid
+                    ? 'Pagamento processado'
+                    : 'Pagamento não processado'}
                 </Badge>
               </Flex>
             </Card>
