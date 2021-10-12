@@ -20,15 +20,51 @@ import { Title } from '../components/ui/title';
 import { APP_NAME } from '../utils/constants';
 import { getError } from '../utils/get-error';
 import { request } from '../utils/request';
-import { useOrderHistory } from '../hooks/useOrderHistory';
 import { Loading } from '../components/ui/loading';
 import { Btn } from '../components/ui/btn';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/dist/client/router';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { currency } from '../utils/formatter';
+import { useFetchData } from '../hooks/useFetchData';
+
+type Order = {
+  _id: string;
+  createdAt: string;
+  createdAtFormatted: string;
+  totalPrice: number;
+  totalPriceFormatted: string;
+  isPaid: boolean;
+  isDelivered: boolean;
+};
+
+const fetchOrdersFn = async () => {
+  const { USER_TOKEN } = nookies.get(null);
+
+  const { data } = (await request.get('orders', {
+    headers: { Authorization: 'Bearer ' + USER_TOKEN },
+  })) as { data: Order[] };
+
+  const ordersResponse: Order[] = data
+    .map((order: Order) => ({
+      ...order,
+      createdAtFormatted: format(parseISO(order.createdAt), 'dd/MM/yyyy', {
+        locale: ptBR,
+      }),
+      totalPriceFormatted: currency.format(order.totalPrice),
+    }))
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
+  return ordersResponse;
+};
 
 const OrderHistory: NextPage = () => {
   const router = useRouter();
-  const { orders, error, isLoading, fetchOrders } = useOrderHistory();
+  const { data, error, isLoading, fetchData } = useFetchData(fetchOrdersFn);
 
   const actionsButtonClickHandler = (id: string) => {
     router.push(`/order/${id}`);
@@ -41,7 +77,7 @@ const OrderHistory: NextPage = () => {
       </Head>
       <MainContainer>
         <Grid
-          columnGap="2"
+          gridGap="2"
           h="100%"
           templateColumns={{ base: '1fr', lg: '1fr 3fr' }}
         >
@@ -66,7 +102,7 @@ const OrderHistory: NextPage = () => {
                 <Btn
                   border="1px solid"
                   borderColor="gray.500"
-                  onClick={fetchOrders}
+                  onClick={fetchData}
                 >
                   Recarregar
                 </Btn>
@@ -82,7 +118,7 @@ const OrderHistory: NextPage = () => {
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {orders.map((order) => (
+                    {data?.map((order) => (
                       <Tr key={order._id}>
                         <Td>{order.createdAtFormatted}</Td>
                         <Td>{order.totalPriceFormatted}</Td>

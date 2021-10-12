@@ -102,7 +102,7 @@ const ProfilePage: NextPage<ProfilePageProps> = ({ user }) => {
       </Head>
       <MainContainer>
         <Grid
-          columnGap="2"
+          gridGap="2"
           h="100%"
           templateColumns={{ base: '1fr', lg: '1fr 3fr' }}
         >
