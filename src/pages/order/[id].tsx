@@ -184,7 +184,7 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
                   });
                 }
 
-                router.reload();
+                router.replace(router.asPath);
               },
             } as PaypalButtonsProps)
             .render(paypalRef);
