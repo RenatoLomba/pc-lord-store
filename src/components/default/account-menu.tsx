@@ -57,11 +57,11 @@ const AccountMenu: FC = () => {
         <VStack gridGap="4" mt="6">
           {loggedUser ? (
             <>
-              <NextLink href="/" passHref>
-                <Link>Perfil</Link>
+              <NextLink href="/profile" passHref>
+                <Link onClick={closeAccountMenu}>Perfil</Link>
               </NextLink>
-              <NextLink href="/" passHref>
-                <Link>Histórico de compras</Link>
+              <NextLink href="/order_history" passHref>
+                <Link onClick={closeAccountMenu}>Histórico de compras</Link>
               </NextLink>
 
               <Btn w="100%" onClick={logoutButtonHandler} buttonStyle="danger">
