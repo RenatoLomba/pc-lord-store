@@ -204,7 +204,7 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
       </Head>
       <MainContainer>
         <Title>Pedido {order._id}</Title>
-        <Grid columnGap="2" templateColumns={{ base: '1fr', lg: '3fr 1fr' }}>
+        <Grid gridGap="2" templateColumns={{ base: '1fr', lg: '3fr 1fr' }}>
           <VStack as="section">
             <Card alignItems="flex-start">
               <Heading size="xl" fontWeight="medium">

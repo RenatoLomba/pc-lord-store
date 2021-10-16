@@ -16,6 +16,8 @@ const Btn: FC<BtnProps> = ({ children, buttonStyle = 'primary', ...rest }) => {
       _focus={{ outline: 0 }}
       _active={{ transform: 'scale(0.9)' }}
       position="relative"
+      border="1px solid"
+      borderColor="gray.500"
       {...rest}
     >
       {children}
