@@ -7,6 +7,7 @@ import { CartProvider } from '../contexts/cart-context';
 import { MenuProvider } from '../contexts/menu-context';
 import { AuthProvider } from '../contexts/auth-context';
 import { OrderProvider } from '../contexts/order-context';
+import { UserChat } from '../components/default/user-chat';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -17,6 +18,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             <OrderProvider>
               <Header />
               <Component {...pageProps} />
+              <UserChat />
             </OrderProvider>
           </CartProvider>
         </MenuProvider>
