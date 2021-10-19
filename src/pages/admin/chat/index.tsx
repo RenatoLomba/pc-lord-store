@@ -1,6 +1,7 @@
 import {
   Box,
   Grid,
+  Heading,
   Link,
   Table,
   Tbody,
@@ -8,6 +9,8 @@ import {
   Th,
   Thead,
   Tr,
+  useColorModeValue,
+  Text,
 } from '@chakra-ui/react';
 import { GetServerSideProps, NextPage } from 'next';
 import NextLink from 'next/link';
@@ -38,6 +41,8 @@ const ChatPage: NextPage = () => {
   const { loggedUser } = useAuth();
 
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [adminRooms, setAdminRooms] = useState<Room[]>([]);
+  const bgHoverStyle = useColorModeValue('gray.100', 'gray.600');
 
   const socket = useMemo<Socket | undefined>(() => {
     if (!loggedUser || !loggedUser?.isAdmin) {
@@ -61,16 +66,25 @@ const ChatPage: NextPage = () => {
         'show-rooms',
         { adminId: loggedUser?._id },
         (res: { rooms: Room[] }) => {
-          console.log(rooms);
           const roomsReceived = res.rooms.map((room) => getRoomFormatted(room));
           setRooms(roomsReceived);
         },
       );
 
       socket?.on('user-entered', (res: { room: Room }) => {
+        console.log(res);
         const newRoom = getRoomFormatted(res.room);
         setRooms((prev) => [...prev, newRoom]);
       });
+
+      socket?.emit(
+        'show-admin-rooms',
+        { adminId: loggedUser?._id },
+        (res: { rooms: Room[] }) => {
+          const { rooms: roomsReceived } = res;
+          setAdminRooms(roomsReceived.map((room) => getRoomFormatted(room)));
+        },
+      );
     });
   }, [socket]);
 
@@ -88,28 +102,80 @@ const ChatPage: NextPage = () => {
           <Box>
             <AdminSidebar tabActive="chat" />
           </Box>
-          <Card>
+          <Card alignItems="flex-start">
             <Title alignSelf="flex-start">Suporte aos usuários</Title>
-            <Table w="100%">
-              <Thead>
-                <Tr>
-                  <Th>Nome</Th>
-                  <Th>Última atualização</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {rooms.map((room) => (
-                  <Tr key={room._id}>
-                    <Td>
-                      <NextLink href={`/admin/chat/${room._id}`}>
-                        <Link>{room.user.name}</Link>
-                      </NextLink>
-                    </Td>
-                    <Td>{room.updatedAtFormatted}</Td>
+            <Heading color="warning.def" fontWeight="medium" fontSize="2xl">
+              Em andamento
+            </Heading>
+            {adminRooms.length > 0 ? (
+              <Table w="100%">
+                <Thead>
+                  <Tr>
+                    <Th>Nome</Th>
+                    <Th>Última atualização</Th>
                   </Tr>
-                ))}
-              </Tbody>
-            </Table>
+                </Thead>
+                <Tbody>
+                  {adminRooms.map((room) => (
+                    <NextLink
+                      key={room._id}
+                      href={`/admin/chat/${room._id}`}
+                      passHref
+                    >
+                      <Tr
+                        cursor="pointer"
+                        transition="background-color 0.1s ease-in-out"
+                        _hover={{ bgColor: bgHoverStyle }}
+                      >
+                        <Td>
+                          <Link>{room.user.name}</Link>
+                        </Td>
+                        <Td>{room.updatedAtFormatted}</Td>
+                      </Tr>
+                    </NextLink>
+                  ))}
+                </Tbody>
+              </Table>
+            ) : (
+              <Text>Nenhum atendimento em andamento no momento</Text>
+            )}
+
+            <Heading color="success.def" fontWeight="medium" fontSize="2xl">
+              Disponíveis
+            </Heading>
+
+            {rooms.length > 0 ? (
+              <Table w="100%">
+                <Thead>
+                  <Tr>
+                    <Th>Nome</Th>
+                    <Th>Última atualização</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {rooms.map((room) => (
+                    <NextLink
+                      key={room._id}
+                      href={`/admin/chat/${room._id}`}
+                      passHref
+                    >
+                      <Tr
+                        cursor="pointer"
+                        transition="background-color 0.1s ease-in-out"
+                        _hover={{ bgColor: bgHoverStyle }}
+                      >
+                        <Td>
+                          <Link>{room.user.name}</Link>
+                        </Td>
+                        <Td>{room.updatedAtFormatted}</Td>
+                      </Tr>
+                    </NextLink>
+                  ))}
+                </Tbody>
+              </Table>
+            ) : (
+              <Text>Nenhum atendimento disponível no momento</Text>
+            )}
           </Card>
         </Grid>
       </MainContainer>
@@ -119,11 +185,12 @@ const ChatPage: NextPage = () => {
 
 const getServerSideProps: GetServerSideProps = async (ctx) => {
   const { USER_TOKEN } = nookies.get(ctx);
+  const { resolvedUrl } = ctx;
 
   if (!USER_TOKEN) {
     return {
       redirect: {
-        destination: `/login?redirect=chat`,
+        destination: `/login?redirect=${resolvedUrl}`,
         permanent: false,
       },
     };
@@ -137,7 +204,7 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
     if (!data?.isValid) {
       return {
         redirect: {
-          destination: '/login?message=Usuário inválido&redirect=chat',
+          destination: `/login?message=Usuário inválido&redirect=${resolvedUrl}`,
           permanent: false,
         },
       };

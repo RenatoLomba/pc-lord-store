@@ -45,11 +45,11 @@ const ChatBox: FC = () => {
   const bgStyle = useColorModeValue('gray.100', 'gray.800');
 
   const socket = useMemo<Socket | undefined>(() => {
-    if (!loggedUser || loggedUser?.isAdmin) {
+    if (!loggedUser || loggedUser?.isAdmin || !isOpen) {
       return;
     }
     return io(`${API_URL}/room`);
-  }, [loggedUser]);
+  }, [loggedUser, isOpen]);
 
   const chatMessagesBoxRef = useRef() as MutableRefObject<HTMLDivElement>;
 
@@ -60,7 +60,7 @@ const ChatBox: FC = () => {
     if (!chatMessagesBoxRef?.current) return;
     const scrollHeight = chatMessagesBoxRef.current.scrollHeight;
     chatMessagesBoxRef.current.scrollTop = scrollHeight;
-  }, [messages]);
+  }, [messages, isOpen]);
 
   const getMessageFormatted = (msg: Message) => {
     return {
@@ -81,20 +81,16 @@ const ChatBox: FC = () => {
           setMessages(res.messages.map((msg) => getMessageFormatted(msg)));
         },
       );
-    });
 
-    socket?.on('receive-message', ({ newMessage }: { newMessage: Message }) => {
-      console.log(newMessage);
-      const newMessageFormatted = getMessageFormatted(newMessage);
-      setMessages((prev) => [...prev, newMessageFormatted]);
+      socket?.on(
+        'receive-message',
+        ({ newMessage }: { newMessage: Message }) => {
+          const newMessageFormatted = getMessageFormatted(newMessage);
+          setMessages((prev) => [...prev, newMessageFormatted]);
+        },
+      );
     });
   }, [socket]);
-
-  useEffect(() => {
-    if (loggedUser && messages.length > 0) {
-      open();
-    }
-  }, [loggedUser, messages]);
 
   const sendMessageHandler = (message: string) => {
     socket?.emit(
@@ -106,6 +102,12 @@ const ChatBox: FC = () => {
       },
     );
   };
+
+  useEffect(() => {
+    if (loggedUser && messages.length > 0) {
+      open();
+    }
+  }, [loggedUser, messages]);
 
   const signInHandler = () => {
     close();
