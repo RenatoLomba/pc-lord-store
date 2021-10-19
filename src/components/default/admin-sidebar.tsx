@@ -22,7 +22,7 @@ const AdminSidebar: FC<AdminSidebarProps> = ({ tabActive }) => {
         {
           href: '/admin/chat',
           isActive: tabActive === 'chat',
-          name: 'Chatbox',
+          name: 'Suporte',
         },
       ]}
     />

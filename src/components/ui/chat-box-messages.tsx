@@ -18,7 +18,7 @@ const ChatBoxMessages: FC<ChatBoxMessagesProps> = ({ messages, ...rest }) => {
   const { loggedUser } = useAuth();
 
   return (
-    <VStack gridGap="1" padding="3" {...rest}>
+    <VStack padding="3" {...rest}>
       {messages.map((message) => (
         <Box
           bgColor={
@@ -28,7 +28,7 @@ const ChatBoxMessages: FC<ChatBoxMessagesProps> = ({ messages, ...rest }) => {
           }
           padding="3"
           borderRadius="5px"
-          w="50%"
+          w="47.5%"
           alignSelf={
             message.senderId === loggedUser?._id ? 'flex-end' : 'flex-start'
           }

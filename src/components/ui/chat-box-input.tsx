@@ -30,13 +30,17 @@ const ChatBoxInput: FC<CheckBoxInputProps> = ({ sendMessageHandler }) => {
       <Input
         bgColor="secondary.light"
         color="white"
-        border="1px solid"
-        borderColor="gray.500"
+        borderRadius="0"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         disabled={isDisabled}
       />
-      <Btn type="submit" disabled={isDisabled} buttonStyle="success">
+      <Btn
+        border="none"
+        type="submit"
+        disabled={isDisabled}
+        buttonStyle="secondary"
+      >
         <ArrowRightIcon />
       </Btn>
     </HStack>
