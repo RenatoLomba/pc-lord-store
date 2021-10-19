@@ -43,7 +43,7 @@ const Home: NextPage<HomeProps> = ({ products }) => {
         isClosable: true,
       });
     }
-  }, []);
+  }, [message]);
 
   return (
     <>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Grid,
   Heading,
@@ -38,6 +38,8 @@ const PlaceorderPage: NextPage = () => {
   const { cartItems, clearCart } = useCart();
   const { addressInfo, paymentMethod, clearOrder } = useOrder();
   const [isLoading, setIsLoading] = useState(false);
+
+  const { message } = router.query;
 
   const fullAddress = `${addressInfo?.firstName} ${addressInfo?.lastName}, ${addressInfo?.address}, nº ${addressInfo?.number} - ${addressInfo?.city}, ${addressInfo?.state} - ${addressInfo?.postalCode}`;
 
@@ -112,6 +114,18 @@ const PlaceorderPage: NextPage = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (message) {
+      toast({
+        title: 'Erro',
+        description: String(message),
+        status: 'error',
+        variant: 'solid',
+        isClosable: true,
+      });
+    }
+  }, [message]);
 
   return (
     <>

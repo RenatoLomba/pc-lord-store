@@ -1,0 +1,188 @@
+import { Box, Grid } from '@chakra-ui/react';
+import { GetServerSideProps, NextPage } from 'next';
+import Head from 'next/head';
+import React, {
+  MutableRefObject,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import nookies from 'nookies';
+import { AdminSidebar } from '../../../components/default/admin-sidebar';
+import { Card } from '../../../components/ui/card';
+import { MainContainer } from '../../../components/ui/main-container';
+import { Title } from '../../../components/ui/title';
+import { API_URL, APP_NAME } from '../../../utils/constants';
+import { request } from '../../../utils/request';
+import { getError } from '../../../utils/get-error';
+import { ChatBoxMessages } from '../../../components/ui/chat-box-messages';
+import { ChatBoxInput } from '../../../components/ui/chat-box-input';
+import { useRouter } from 'next/dist/client/router';
+import { useAuth } from '../../../hooks/useAuth';
+import io, { Socket } from 'socket.io-client';
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+
+type Message = {
+  senderId: string;
+  message: string;
+  senderName: string;
+  sendTime: string;
+  sendTimeFormatted: string;
+};
+
+type Room = {
+  admin: string;
+  user: { _id: string; name: string };
+  messages: Message[];
+};
+
+const RoomPage: NextPage = () => {
+  const { loggedUser } = useAuth();
+  const router = useRouter();
+  const chatMessagesBoxRef = useRef() as MutableRefObject<HTMLDivElement>;
+  const { room: roomId } = router.query;
+
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [room, setRoom] = useState<Room>();
+
+  useEffect(() => {
+    if (!chatMessagesBoxRef?.current) return;
+    const scrollHeight = chatMessagesBoxRef.current.scrollHeight;
+    chatMessagesBoxRef.current.scrollTop = scrollHeight;
+  }, [messages]);
+
+  const socket = useMemo<Socket | undefined>(() => {
+    if (!loggedUser || !loggedUser?.isAdmin) {
+      return;
+    }
+    return io(`${API_URL}/room`);
+  }, [loggedUser]);
+
+  const getMessageFormatted = (msg: Message) => {
+    return {
+      ...msg,
+      sendTimeFormatted: format(new Date(msg.sendTime), 'dd/MM HH:mm', {
+        locale: ptBR,
+      }),
+    };
+  };
+
+  useEffect(() => {
+    socket?.on('connect', () => {
+      socket?.emit(
+        'join-room',
+        { adminId: loggedUser?._id, roomId },
+        (res: { room: Room }) => {
+          console.log(res);
+          console.log(res?.room?.messages);
+          setRoom(res.room);
+          setMessages(res.room.messages.map((msg) => getMessageFormatted(msg)));
+        },
+      );
+
+      socket?.on(
+        'receive-message',
+        ({ newMessage }: { newMessage: Message }) => {
+          console.log(newMessage);
+          const newMessageFormatted = getMessageFormatted(newMessage);
+          setMessages((prev) => [...prev, newMessageFormatted]);
+        },
+      );
+    });
+  }, [socket]);
+
+  const sendMessageHandler = (message: string) => {
+    socket?.emit(
+      'send-message',
+      { message, id: loggedUser?._id, name: loggedUser?.name, roomId },
+      ({ newMessage }: { newMessage: Message }) => {
+        const newMessageFormatted = getMessageFormatted(newMessage);
+        setMessages((prev) => [...prev, newMessageFormatted]);
+      },
+    );
+  };
+
+  return (
+    <>
+      <Head>
+        <title>
+          {APP_NAME} - Chat com {room?.user?.name}
+        </title>
+      </Head>
+      <MainContainer>
+        <Grid
+          gridGap="2"
+          h="100%"
+          templateColumns={{ base: '1fr', lg: '1fr 3fr' }}
+        >
+          <Box>
+            <AdminSidebar tabActive="chat" />
+          </Box>
+          <Card>
+            <Title alignSelf="flex-start">Suporte a {room?.user?.name}</Title>
+            <Box w="100%" h="500px" overflowY="auto" ref={chatMessagesBoxRef}>
+              <ChatBoxMessages h="100%" messages={messages} />
+            </Box>
+            <ChatBoxInput sendMessageHandler={sendMessageHandler} />
+          </Card>
+        </Grid>
+      </MainContainer>
+    </>
+  );
+};
+
+const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const { USER_TOKEN } = nookies.get(ctx);
+
+  if (!USER_TOKEN) {
+    return {
+      redirect: {
+        destination: `/login?redirect=chat`,
+        permanent: false,
+      },
+    };
+  }
+
+  try {
+    const { data } = await request.get('auth', {
+      headers: { Authorization: 'Bearer ' + USER_TOKEN },
+    });
+
+    if (!data?.isValid) {
+      return {
+        redirect: {
+          destination: '/login?message=Usuário inválido&redirect=chat',
+          permanent: false,
+        },
+      };
+    }
+
+    if (!data?.user?.isAdmin) {
+      return {
+        redirect: {
+          destination: '/?message=Acesso apenas para administradores',
+          permanent: false,
+        },
+      };
+    }
+
+    return {
+      props: {
+        user: {
+          name: data.user.name,
+          email: data.user.email,
+          _id: data.user._id,
+        },
+      },
+    };
+  } catch (err) {
+    return {
+      redirect: { destination: `/?message=${getError(err)}`, permanent: false },
+    };
+  }
+};
+
+export { getServerSideProps };
+export default RoomPage;
