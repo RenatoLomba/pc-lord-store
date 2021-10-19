@@ -1,4 +1,4 @@
-import { Box, HStack, VStack, Text } from '@chakra-ui/layout';
+import { Box, HStack, VStack, Text, StackProps } from '@chakra-ui/react';
 import React, { FC } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -10,15 +10,15 @@ type Message = {
   sendTimeFormatted: string;
 };
 
-type ChatBoxMessagesProps = {
+type ChatBoxMessagesProps = StackProps & {
   messages: Message[];
 };
 
-const ChatBoxMessages: FC<ChatBoxMessagesProps> = ({ messages }) => {
+const ChatBoxMessages: FC<ChatBoxMessagesProps> = ({ messages, ...rest }) => {
   const { loggedUser } = useAuth();
 
   return (
-    <VStack gridGap="1" padding="3">
+    <VStack gridGap="1" padding="3" {...rest}>
       {messages.map((message) => (
         <Box
           bgColor={

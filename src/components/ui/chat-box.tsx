@@ -3,22 +3,26 @@ import {
   Box,
   Button,
   Flex,
+  Heading,
   HStack,
   Text,
   useColorModeValue,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
+import { useRouter } from 'next/dist/client/router';
 import React, {
   FC,
   MutableRefObject,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
-import { Socket } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../../hooks/useAuth';
-import { Btn } from '../ui/btn';
+import { API_URL } from '../../utils/constants';
+import { Btn } from './btn';
 import { ChatBoxInput } from './chat-box-input';
 import { ChatBoxMessages } from './chat-box-messages';
 
@@ -30,27 +34,22 @@ type Message = {
   sendTimeFormatted: string;
 };
 
-type ChatBoxProps = {
-  socket?: Socket;
-  onConnect?: (
-    setMessages: (messages: Message[]) => void,
-    setRoomId: (id: string) => void,
-  ) => void;
-  roomId?: string;
-};
-
-const ChatBox: FC<ChatBoxProps> = ({
-  socket,
-  onConnect,
-  roomId: roomIdProp,
-}) => {
+const ChatBox: FC = () => {
+  const router = useRouter();
   const { loggedUser } = useAuth();
 
-  const [roomId, setRoomId] = useState(roomIdProp || '');
+  const [roomId, setRoomId] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
 
   const [isOpen, setIsOpen] = useState(false);
   const bgStyle = useColorModeValue('gray.100', 'gray.800');
+
+  const socket = useMemo<Socket | undefined>(() => {
+    if (!loggedUser || loggedUser?.isAdmin) {
+      return;
+    }
+    return io(`${API_URL}/room`);
+  }, [loggedUser]);
 
   const chatMessagesBoxRef = useRef() as MutableRefObject<HTMLDivElement>;
 
@@ -63,33 +62,66 @@ const ChatBox: FC<ChatBoxProps> = ({
     chatMessagesBoxRef.current.scrollTop = scrollHeight;
   }, [messages]);
 
+  const getMessageFormatted = (msg: Message) => {
+    return {
+      ...msg,
+      sendTimeFormatted: format(new Date(msg.sendTime), 'dd/MM HH:mm', {
+        locale: ptBR,
+      }),
+    };
+  };
+
   useEffect(() => {
     socket?.on('connect', () => {
-      onConnect?.(setMessages, setRoomId);
+      socket?.emit(
+        'enter-room',
+        { userId: loggedUser?._id },
+        (res: { roomId: string; messages: Message[] }) => {
+          setRoomId(res.roomId);
+          setMessages(res.messages.map((msg) => getMessageFormatted(msg)));
+        },
+      );
+    });
+
+    socket?.on('receive-message', ({ newMessage }: { newMessage: Message }) => {
+      console.log(newMessage);
+      const newMessageFormatted = getMessageFormatted(newMessage);
+      setMessages((prev) => [...prev, newMessageFormatted]);
     });
   }, [socket]);
+
+  useEffect(() => {
+    if (loggedUser && messages.length > 0) {
+      open();
+    }
+  }, [loggedUser, messages]);
 
   const sendMessageHandler = (message: string) => {
     socket?.emit(
       'send-message',
       { message, id: loggedUser?._id, name: loggedUser?.name, roomId },
       ({ newMessage }: { newMessage: Message }) => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            ...newMessage,
-            sendTimeFormatted: format(
-              new Date(newMessage.sendTime),
-              'dd/MM HH:mm',
-              {
-                locale: ptBR,
-              },
-            ),
-          },
-        ]);
+        const newMessageFormatted = getMessageFormatted(newMessage);
+        setMessages((prev) => [...prev, newMessageFormatted]);
       },
     );
   };
+
+  const signInHandler = () => {
+    close();
+    const path = router.asPath;
+    router.push(`/login?redirect=${path.replace('/', '')}`);
+  };
+
+  if (loggedUser?.isAdmin) {
+    return (
+      <Box position="fixed" left="50px" bottom="50px">
+        <Heading fontSize="3xl" color="danger.def">
+          Usuário Administrador
+        </Heading>
+      </Box>
+    );
+  }
 
   if (!isOpen) {
     return (
@@ -144,7 +176,12 @@ const ChatBox: FC<ChatBoxProps> = ({
           <Flex w="100%" h="100%" justifyContent="center" alignItems="center">
             <Box>
               <Text>Entre para enviar uma mensagem</Text>
-              <Btn marginTop="1rem" w="100%" buttonStyle="success">
+              <Btn
+                onClick={signInHandler}
+                marginTop="1rem"
+                w="100%"
+                buttonStyle="success"
+              >
                 Entrar
               </Btn>
             </Box>

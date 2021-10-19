@@ -53,7 +53,7 @@ const PaymentPage: NextPage = () => {
         isClosable: true,
       });
     }
-  }, []);
+  }, [message]);
 
   useEffect(() => {
     if (isError) {

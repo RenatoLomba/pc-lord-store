@@ -7,7 +7,7 @@ import { CartProvider } from '../contexts/cart-context';
 import { MenuProvider } from '../contexts/menu-context';
 import { AuthProvider } from '../contexts/auth-context';
 import { OrderProvider } from '../contexts/order-context';
-import { UserChat } from '../components/default/user-chat';
+import { ChatBox } from '../components/ui/chat-box';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -18,7 +18,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             <OrderProvider>
               <Header />
               <Component {...pageProps} />
-              <UserChat />
+              <ChatBox />
             </OrderProvider>
           </CartProvider>
         </MenuProvider>

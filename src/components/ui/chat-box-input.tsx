@@ -2,7 +2,7 @@ import { ArrowRightIcon } from '@chakra-ui/icons';
 import { HStack, Input } from '@chakra-ui/react';
 import React, { FC, useMemo, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { Btn } from '../ui/btn';
+import { Btn } from './btn';
 
 type CheckBoxInputProps = {
   sendMessageHandler: (msg: string) => void;

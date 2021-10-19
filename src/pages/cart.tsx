@@ -48,7 +48,7 @@ const CartPage: NextPage = () => {
         isClosable: true,
       });
     }
-  }, []);
+  }, [message]);
 
   const checkoutOrderHandler = () => {
     router.push('/shipping');

@@ -46,7 +46,7 @@ const LoginPage: NextPage = () => {
         isClosable: true,
       });
     }
-  }, []);
+  }, [message]);
 
   const formSubmitHandler = async (values: {
     email: string;

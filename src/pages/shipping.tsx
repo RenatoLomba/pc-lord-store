@@ -58,7 +58,7 @@ const ShippingPage: NextPage<ShippingPage> = ({ username, addressInfo }) => {
         isClosable: true,
       });
     }
-  }, []);
+  }, [message]);
 
   const formSubmitHandler = async (values: AddressInfo) => {
     try {
