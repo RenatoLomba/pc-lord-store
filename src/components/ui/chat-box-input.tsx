@@ -6,9 +6,13 @@ import { Btn } from './btn';
 
 type CheckBoxInputProps = {
   sendMessageHandler: (msg: string) => void;
+  disabled?: boolean;
 };
 
-const ChatBoxInput: FC<CheckBoxInputProps> = ({ sendMessageHandler }) => {
+const ChatBoxInput: FC<CheckBoxInputProps> = ({
+  sendMessageHandler,
+  disabled = false,
+}) => {
   const { loggedUser } = useAuth();
   const isDisabled = useMemo(() => (loggedUser ? false : true), [loggedUser]);
   const [message, setMessage] = useState('');
@@ -33,12 +37,12 @@ const ChatBoxInput: FC<CheckBoxInputProps> = ({ sendMessageHandler }) => {
         borderRadius="0"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        disabled={isDisabled}
+        disabled={isDisabled || disabled}
       />
       <Btn
         border="none"
         type="submit"
-        disabled={isDisabled}
+        disabled={isDisabled || disabled}
         buttonStyle="secondary"
       >
         <ArrowRightIcon />

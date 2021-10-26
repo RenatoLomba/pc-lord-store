@@ -42,6 +42,7 @@ const ChatPage: NextPage = () => {
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [adminRooms, setAdminRooms] = useState<Room[]>([]);
+  const [innactiveRooms, setInnactiveRooms] = useState<Room[]>([]);
   const bgHoverStyle = useColorModeValue('gray.100', 'gray.600');
 
   const socket = useMemo<Socket | undefined>(() => {
@@ -72,7 +73,6 @@ const ChatPage: NextPage = () => {
       );
 
       socket?.on('user-entered', (res: { room: Room }) => {
-        console.log(res);
         const newRoom = getRoomFormatted(res.room);
         setRooms((prev) => [...prev, newRoom]);
       });
@@ -87,6 +87,18 @@ const ChatPage: NextPage = () => {
       );
     });
   }, [socket]);
+
+  useEffect(() => {
+    if (!loggedUser) return;
+
+    const fetchInnactiveRooms = async () => {
+      const { data } = await request.get<Room[]>('rooms/innactive');
+      const rooms = data.map((r) => getRoomFormatted(r));
+      setInnactiveRooms(rooms);
+    };
+
+    fetchInnactiveRooms();
+  }, [loggedUser]);
 
   return (
     <>
@@ -157,6 +169,43 @@ const ChatPage: NextPage = () => {
                     <NextLink
                       key={room._id}
                       href={`/admin/chat/${room._id}`}
+                      passHref
+                    >
+                      <Tr
+                        cursor="pointer"
+                        transition="background-color 0.1s ease-in-out"
+                        _hover={{ bgColor: bgHoverStyle }}
+                      >
+                        <Td>
+                          <Link>{room.user.name}</Link>
+                        </Td>
+                        <Td>{room.updatedAtFormatted}</Td>
+                      </Tr>
+                    </NextLink>
+                  ))}
+                </Tbody>
+              </Table>
+            ) : (
+              <Text>Nenhum atendimento disponível no momento</Text>
+            )}
+
+            <Heading color="danger.def" fontWeight="medium" fontSize="2xl">
+              Finalizados
+            </Heading>
+
+            {innactiveRooms.length > 0 ? (
+              <Table w="100%">
+                <Thead>
+                  <Tr>
+                    <Th>Nome</Th>
+                    <Th>Última atualização</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {innactiveRooms.map((room) => (
+                    <NextLink
+                      key={room._id}
+                      href={`/admin/chat/${room._id}?innactive=true`}
                       passHref
                     >
                       <Tr

@@ -1,4 +1,4 @@
-import { Box, Grid } from '@chakra-ui/react';
+import { Box, Flex, Grid } from '@chakra-ui/react';
 import { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
 import React, {
@@ -23,6 +23,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import io, { Socket } from 'socket.io-client';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
+import { Btn } from '../../../components/ui/btn';
 
 type Message = {
   senderId: string;
@@ -42,7 +43,7 @@ const RoomPage: NextPage = () => {
   const { loggedUser } = useAuth();
   const router = useRouter();
   const chatMessagesBoxRef = useRef() as MutableRefObject<HTMLDivElement>;
-  const { room: roomId } = router.query;
+  const { room: roomId, innactive } = router.query;
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [room, setRoom] = useState<Room>();
@@ -54,7 +55,7 @@ const RoomPage: NextPage = () => {
   }, [messages]);
 
   const socket = useMemo<Socket | undefined>(() => {
-    if (!loggedUser || !loggedUser?.isAdmin) {
+    if (!loggedUser || !loggedUser?.isAdmin || !!innactive) {
       return;
     }
     return io(`${API_URL}/room`);
@@ -70,6 +71,8 @@ const RoomPage: NextPage = () => {
   };
 
   useEffect(() => {
+    if (!socket) return;
+
     socket?.on('connect', () => {
       socket?.emit(
         'join-room',
@@ -90,6 +93,19 @@ const RoomPage: NextPage = () => {
     });
   }, [socket]);
 
+  useEffect(() => {
+    if (!innactive || !loggedUser) return;
+    const fetchRoomDataIfInnactive = async () => {
+      const { data: room } = await request.get<Room>(`rooms/get_by/${roomId}`);
+      setRoom(room);
+      const messagesFormatted = room.messages.map((r) =>
+        getMessageFormatted(r),
+      );
+      setMessages(messagesFormatted);
+    };
+    fetchRoomDataIfInnactive();
+  }, [loggedUser]);
+
   const sendMessageHandler = (message: string) => {
     socket?.emit(
       'send-message',
@@ -99,6 +115,13 @@ const RoomPage: NextPage = () => {
         setMessages((prev) => [...prev, newMessageFormatted]);
       },
     );
+  };
+
+  const finishRoomHandler = () => {
+    socket?.emit('finish-room', { roomId }, (res: { roomId: string }) => {
+      const path = router.asPath;
+      router.replace(path + '?innactive=true');
+    });
   };
 
   return (
@@ -118,11 +141,27 @@ const RoomPage: NextPage = () => {
             <AdminSidebar tabActive="chat" />
           </Box>
           <Card>
-            <Title alignSelf="flex-start">Suporte a {room?.user?.name}</Title>
+            <Flex
+              w="100%"
+              alignSelf="flex-start"
+              justifyContent="space-between"
+            >
+              <Title>
+                Suporte a {room?.user?.name} {innactive && '(Finalizado)'}
+              </Title>
+              {!innactive && (
+                <Btn buttonStyle="danger" onClick={finishRoomHandler}>
+                  Finalizar atendimento
+                </Btn>
+              )}
+            </Flex>
             <Box w="100%" h="500px" overflowY="auto" ref={chatMessagesBoxRef}>
               <ChatBoxMessages h="100%" messages={messages} />
             </Box>
-            <ChatBoxInput sendMessageHandler={sendMessageHandler} />
+            <ChatBoxInput
+              disabled={!!innactive}
+              sendMessageHandler={sendMessageHandler}
+            />
           </Card>
         </Grid>
       </MainContainer>
