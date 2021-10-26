@@ -24,12 +24,14 @@ const AuthProvider: FC = ({ children }) => {
   const [token, setToken] = useState('');
 
   const loginUser = (user: User, tokenReceived: string) => {
+    request.defaults.headers.common.authorization = 'Bearer ' + tokenReceived;
     setLoggedUser(user);
     setToken(tokenReceived);
     nookies.set(null, USER_TOKEN_COOKIE, tokenReceived);
   };
 
   const logoutUser = () => {
+    request.defaults.headers.common.authorization = '';
     setLoggedUser(undefined);
     setToken('');
     nookies.destroy(null, USER_TOKEN_COOKIE);
@@ -44,6 +46,7 @@ const AuthProvider: FC = ({ children }) => {
         headers: { Authorization: 'Bearer ' + USER_TOKEN },
       });
       if (!data.isValid) return;
+      request.defaults.headers.common.authorization = 'Bearer ' + USER_TOKEN;
       setLoggedUser(data.user);
       setToken(USER_TOKEN);
     };

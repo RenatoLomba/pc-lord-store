@@ -40,6 +40,7 @@ const ChatBox: FC = () => {
 
   const [roomId, setRoomId] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isFinished, setIsFinished] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const bgStyle = useColorModeValue('gray.100', 'gray.800');
@@ -48,6 +49,7 @@ const ChatBox: FC = () => {
     if (!loggedUser || loggedUser?.isAdmin || !isOpen) {
       return;
     }
+    setIsFinished(false);
     return io(`${API_URL}/room`);
   }, [loggedUser, isOpen]);
 
@@ -89,8 +91,18 @@ const ChatBox: FC = () => {
           setMessages((prev) => [...prev, newMessageFormatted]);
         },
       );
+
+      socket?.on('room-finished', (res: { roomId: string }) => {
+        setIsFinished(true);
+      });
     });
   }, [socket]);
+
+  useEffect(() => {
+    if (isFinished) {
+      socket?.disconnect();
+    }
+  }, [isFinished]);
 
   const sendMessageHandler = (message: string) => {
     socket?.emit(
@@ -158,7 +170,7 @@ const ChatBox: FC = () => {
         justifyContent="space-between"
         paddingX="1rem"
       >
-        <Text color="white">Suporte</Text>
+        <Text color="white">Suporte {isFinished && '(Finalizado)'}</Text>
         <Button
           onClick={close}
           bgColor="transparent"
@@ -192,7 +204,10 @@ const ChatBox: FC = () => {
           <ChatBoxMessages messages={messages} />
         )}
       </Box>
-      <ChatBoxInput sendMessageHandler={sendMessageHandler} />
+      <ChatBoxInput
+        disabled={isFinished}
+        sendMessageHandler={sendMessageHandler}
+      />
     </Box>
   );
 };

@@ -1,6 +1,6 @@
 export const APP_NAME = 'PC Lord';
-export const API_URL = 'https://amazona-ecommerce-api.herokuapp.com';
-// export const API_URL = 'http://localhost:5000';
+// export const API_URL = 'https://amazona-ecommerce-api.herokuapp.com';
+export const API_URL = 'http://localhost:5000';
 
 export const CART_ITEMS_COOKIE = 'CART_ITEMS';
 export const USER_TOKEN_COOKIE = 'USER_TOKEN';
