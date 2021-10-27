@@ -31,6 +31,9 @@ import { getError } from '../../utils/get-error';
 import { request } from '../../utils/request';
 import { useRouter } from 'next/dist/client/router';
 import axios from 'axios';
+import { useAuth } from '../../hooks/useAuth';
+import { Btn } from '../../components/ui/btn';
+import { Loading } from '../../components/ui/loading';
 
 type OrderItem = {
   _id: string;
@@ -93,9 +96,12 @@ declare global {
 const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
   const toast = useToast();
   const router = useRouter();
+  const { loggedUser } = useAuth();
   const orderIsDelivered = order.isDelivered;
   const orderIsPaid = order.isPaid;
+  const { success } = router.query;
   const [loaded, setLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   let paypalRef = useRef() as any;
 
@@ -192,6 +198,35 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
       loadPaymentButtons();
     }
   }, [loaded]);
+
+  const deliverOrderHandler = async () => {
+    setIsLoading(true);
+    try {
+      await request.put(`orders/${order._id}/deliver`);
+      router.replace(router.asPath + '?success=Pedido foi entregue');
+    } catch (err) {
+      toast({
+        variant: 'solid',
+        status: 'error',
+        isClosable: true,
+        title: 'Erro interno',
+        description: getError(err),
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (success) {
+      toast({
+        variant: 'solid',
+        status: 'success',
+        title: 'Sucesso',
+        description: success,
+      });
+    }
+  }, []);
 
   return (
     <>
@@ -320,6 +355,12 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
               </Text>
             </HStack>
             {!order.isPaid && <Box w="100%" ref={(v) => (paypalRef = v)} />}
+            {!order.isDelivered && order.isPaid && loggedUser?.isAdmin && (
+              <Btn onClick={deliverOrderHandler} w="100%">
+                Realizar entrega
+              </Btn>
+            )}
+            {isLoading && <Loading />}
           </Card>
         </Grid>
       </MainContainer>
@@ -329,7 +370,7 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
 
 const getServerSideProps: GetServerSideProps = async (ctx) => {
   const { USER_TOKEN } = nookies.get(ctx);
-  const params = ctx.params;
+  const { params, resolvedUrl } = ctx;
 
   if (!params) {
     return {
@@ -340,7 +381,7 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (!USER_TOKEN) {
     return {
       redirect: {
-        destination: `/login?redirect=order/${params.id}`,
+        destination: `/login?redirect=${resolvedUrl}`,
         permanent: false,
       },
     };
@@ -357,7 +398,7 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
     if (!isAuthenticated) {
       return {
         redirect: {
-          destination: '/login?message=Usuário inválido&redirect=placeorder',
+          destination: `/login?message=Usuário inválido&redirect=${resolvedUrl}`,
           permanent: false,
         },
       };

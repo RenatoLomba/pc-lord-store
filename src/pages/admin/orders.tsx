@@ -13,21 +13,22 @@ import { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
 import React from 'react';
 import nookies from 'nookies';
-import { Card } from '../components/ui/card';
-import { MainContainer } from '../components/ui/main-container';
-import { Sidebar } from '../components/ui/sidebar';
-import { Title } from '../components/ui/title';
-import { APP_NAME } from '../utils/constants';
-import { getError } from '../utils/get-error';
-import { request } from '../utils/request';
-import { Loading } from '../components/ui/loading';
-import { Btn } from '../components/ui/btn';
+import { Card } from '../../components/ui/card';
+import { MainContainer } from '../../components/ui/main-container';
+import { Sidebar } from '../../components/ui/sidebar';
+import { Title } from '../../components/ui/title';
+import { APP_NAME } from '../../utils/constants';
+import { getError } from '../../utils/get-error';
+import { request } from '../../utils/request';
+import { Loading } from '../../components/ui/loading';
+import { Btn } from '../../components/ui/btn';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/dist/client/router';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { currency } from '../utils/formatter';
-import { useFetchData } from '../hooks/useFetchData';
+import { currency } from '../../utils/formatter';
+import { useFetchData } from '../../hooks/useFetchData';
+import { AdminSidebar } from '../../components/default/admin-sidebar';
 
 type Order = {
   _id: string;
@@ -37,10 +38,11 @@ type Order = {
   totalPriceFormatted: string;
   isPaid: boolean;
   isDelivered: boolean;
+  user: { name: string };
 };
 
 const fetchOrdersFn = async () => {
-  const { data } = (await request.get('orders')) as { data: Order[] };
+  const { data } = (await request.get('orders/admin/all')) as { data: Order[] };
 
   const ordersResponse: Order[] = data
     .map((order: Order) => ({
@@ -62,7 +64,7 @@ const fetchOrdersFn = async () => {
   return ordersResponse;
 };
 
-const OrderHistory: NextPage = () => {
+const AdminOrders: NextPage = () => {
   const router = useRouter();
   const { data, error, isLoading, fetchData } = useFetchData(
     fetchOrdersFn,
@@ -76,7 +78,7 @@ const OrderHistory: NextPage = () => {
   return (
     <>
       <Head>
-        <title>{APP_NAME} - Histórico de compras</title>
+        <title>{APP_NAME} - Pedidos</title>
       </Head>
       <MainContainer>
         <Grid
@@ -85,19 +87,10 @@ const OrderHistory: NextPage = () => {
           templateColumns={{ base: '1fr', lg: '1fr 3fr' }}
         >
           <Box>
-            <Sidebar
-              tabs={[
-                { href: '/profile', isActive: false, name: 'Perfil' },
-                {
-                  href: '/order_history',
-                  isActive: true,
-                  name: 'Histórico de compras',
-                },
-              ]}
-            />
+            <AdminSidebar tabActive="orders" />
           </Box>
           <Card>
-            <Title alignSelf="flex-start">Histórico de compras</Title>
+            <Title alignSelf="flex-start">Todos os Pedidos</Title>
             <Box w="100%">
               {isLoading ? (
                 <Loading />
@@ -113,6 +106,7 @@ const OrderHistory: NextPage = () => {
                 <Table variant="simple">
                   <Thead>
                     <Tr>
+                      <Th>Usuário</Th>
                       <Th>Data do pedido</Th>
                       <Th>Total</Th>
                       <Th>Pagamento</Th>
@@ -123,6 +117,7 @@ const OrderHistory: NextPage = () => {
                   <Tbody>
                     {data?.map((order) => (
                       <Tr key={order._id}>
+                        <Td>{order.user?.name || 'Usuário inexistente'}</Td>
                         <Td>{order.createdAtFormatted}</Td>
                         <Td>{order.totalPriceFormatted}</Td>
                         <Td>
@@ -165,11 +160,12 @@ const OrderHistory: NextPage = () => {
 
 const getServerSideProps: GetServerSideProps = async (ctx) => {
   const { USER_TOKEN } = nookies.get(ctx);
+  const { resolvedUrl } = ctx;
 
   if (!USER_TOKEN) {
     return {
       redirect: {
-        destination: `/login?redirect=profile`,
+        destination: `/login?redirect=${resolvedUrl}`,
         permanent: false,
       },
     };
@@ -180,10 +176,19 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
       headers: { Authorization: 'Bearer ' + USER_TOKEN },
     });
 
-    if (!data.isValid) {
+    if (!data?.isValid) {
       return {
         redirect: {
-          destination: '/login?message=Usuário inválido&redirect=profile',
+          destination: `/login?message=Usuário inválido&redirect=${resolvedUrl}`,
+          permanent: false,
+        },
+      };
+    }
+
+    if (!data?.user?.isAdmin) {
+      return {
+        redirect: {
+          destination: '/?message=Acesso apenas para administradores',
           permanent: false,
         },
       };
@@ -200,4 +205,4 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
 };
 
 export { getServerSideProps };
-export default OrderHistory;
+export default AdminOrders;
