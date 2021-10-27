@@ -40,11 +40,7 @@ type Order = {
 };
 
 const fetchOrdersFn = async () => {
-  const { USER_TOKEN } = nookies.get(null);
-
-  const { data } = (await request.get('orders', {
-    headers: { Authorization: 'Bearer ' + USER_TOKEN },
-  })) as { data: Order[] };
+  const { data } = (await request.get('orders')) as { data: Order[] };
 
   const ordersResponse: Order[] = data
     .map((order: Order) => ({
@@ -64,7 +60,10 @@ const fetchOrdersFn = async () => {
 
 const OrderHistory: NextPage = () => {
   const router = useRouter();
-  const { data, error, isLoading, fetchData } = useFetchData(fetchOrdersFn);
+  const { data, error, isLoading, fetchData } = useFetchData(
+    fetchOrdersFn,
+    true,
+  );
 
   const actionsButtonClickHandler = (id: string) => {
     router.push(`/order/${id}`);

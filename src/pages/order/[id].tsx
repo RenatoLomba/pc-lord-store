@@ -171,9 +171,7 @@ const OrderPage: NextPage<OrderPageProps> = ({ order }) => {
                 }
 
                 try {
-                  await request.put(`orders/${order._id}/pay`, undefined, {
-                    headers: { Authorization: 'Bearer ' + USER_TOKEN },
-                  });
+                  await request.put(`orders/${order._id}/pay`);
                 } catch (err) {
                   toast({
                     variant: 'solid',
