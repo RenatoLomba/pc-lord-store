@@ -60,11 +60,12 @@ const DashboardAdmin: NextPage = () => {
 
 const getServerSideProps: GetServerSideProps = async (ctx) => {
   const { USER_TOKEN } = nookies.get(ctx);
+  const { resolvedUrl } = ctx;
 
   if (!USER_TOKEN) {
     return {
       redirect: {
-        destination: `/login?redirect=chat`,
+        destination: `/login?redirect=${resolvedUrl}`,
         permanent: false,
       },
     };
@@ -78,7 +79,7 @@ const getServerSideProps: GetServerSideProps = async (ctx) => {
     if (!data?.isValid) {
       return {
         redirect: {
-          destination: '/login?message=Usuário inválido&redirect=chat',
+          destination: `/login?message=Usuário inválido&redirect=${resolvedUrl}`,
           permanent: false,
         },
       };

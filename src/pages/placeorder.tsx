@@ -59,37 +59,32 @@ const PlaceorderPage: NextPage = () => {
   const totalPriceFormatted = currency.format(totalPrice);
 
   const saveOrder = async () => {
-    const { USER_TOKEN } = nookies.get(null);
-    const { data } = await request.post(
-      'orders',
-      {
-        orderItems: cartItems.map((item) => ({
-          name: item.name,
-          image: item.image,
-          price: item.price,
-          description: item.description,
-          qty: item.qty,
-          slug: item.slug,
-        })),
-        shippingAddress: {
-          firstName: addressInfo?.firstName,
-          lastName: addressInfo?.lastName,
-          address: addressInfo?.address,
-          number: addressInfo?.number,
-          city: addressInfo?.city,
-          state: addressInfo?.state,
-          postalCode: addressInfo?.postalCode,
-          country: addressInfo?.state,
-        },
-        paymentMethod: paymentMethod?.id || 'PayPal',
-        itemsPrice: Number(itemsPrice.toFixed(2)),
-        shippingPrice:
-          shippingPrice === 0 ? 0.01 : Number(shippingPrice.toFixed(2)),
-        taxPrice: Number(taxPrice.toFixed(2)),
-        totalPrice: Number(totalPrice.toFixed(2)),
+    const { data } = await request.post('orders', {
+      orderItems: cartItems.map((item) => ({
+        name: item.name,
+        image: item.image,
+        price: item.price,
+        description: item.description,
+        qty: item.qty,
+        slug: item.slug,
+      })),
+      shippingAddress: {
+        firstName: addressInfo?.firstName,
+        lastName: addressInfo?.lastName,
+        address: addressInfo?.address,
+        number: addressInfo?.number,
+        city: addressInfo?.city,
+        state: addressInfo?.state,
+        postalCode: addressInfo?.postalCode,
+        country: addressInfo?.state,
       },
-      { headers: { Authorization: 'Bearer ' + USER_TOKEN } },
-    );
+      paymentMethod: paymentMethod?.id || 'PayPal',
+      itemsPrice: Number(itemsPrice.toFixed(2)),
+      shippingPrice:
+        shippingPrice === 0 ? 0.01 : Number(shippingPrice.toFixed(2)),
+      taxPrice: Number(taxPrice.toFixed(2)),
+      totalPrice: Number(totalPrice.toFixed(2)),
+    });
     return data;
   };
 

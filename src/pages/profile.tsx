@@ -62,14 +62,9 @@ const ProfilePage: NextPage<ProfilePageProps> = ({ user }) => {
     name: string;
   }) => {
     setIsLoading(true);
-    const { USER_TOKEN } = nookies.get(null);
 
     try {
-      const { data } = await request.put(
-        'auth/update',
-        { ...values },
-        { headers: { Authorization: 'Bearer ' + USER_TOKEN } },
-      );
+      const { data } = await request.put('auth/update', { ...values });
       loginUser(data.user, data.token);
 
       router.replace('/profile?success=Informações atualizadas');
