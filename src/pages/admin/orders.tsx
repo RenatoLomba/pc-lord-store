@@ -15,7 +15,6 @@ import React from 'react';
 import nookies from 'nookies';
 import { Card } from '../../components/ui/card';
 import { MainContainer } from '../../components/ui/main-container';
-import { Sidebar } from '../../components/ui/sidebar';
 import { Title } from '../../components/ui/title';
 import { APP_NAME } from '../../utils/constants';
 import { getError } from '../../utils/get-error';

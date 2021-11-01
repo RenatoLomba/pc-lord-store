@@ -1,4 +1,4 @@
-import { Box, Flex, Grid } from '@chakra-ui/react';
+import { Box, Flex, Grid, Icon } from '@chakra-ui/react';
 import { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
 import React, {
@@ -24,6 +24,7 @@ import io, { Socket } from 'socket.io-client';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 import { Btn } from '../../../components/ui/btn';
+import { MdChevronLeft } from 'react-icons/md';
 
 type Message = {
   senderId: string;
@@ -118,10 +119,14 @@ const RoomPage: NextPage = () => {
   };
 
   const finishRoomHandler = () => {
-    socket?.emit('finish-room', { roomId }, (res: { roomId: string }) => {
+    socket?.emit('finish-room', { roomId }, () => {
       const path = router.asPath;
       router.replace(path + '?innactive=true');
     });
+  };
+
+  const backHandler = () => {
+    router.push('/admin/chat');
   };
 
   return (
@@ -141,6 +146,13 @@ const RoomPage: NextPage = () => {
             <AdminSidebar tabActive="chat" />
           </Box>
           <Card>
+            <Btn
+              alignSelf="flex-start"
+              onClick={backHandler}
+              buttonStyle="secondary"
+            >
+              <Icon as={MdChevronLeft} w={6} h={6} />
+            </Btn>
             <Flex
               w="100%"
               alignSelf="flex-start"

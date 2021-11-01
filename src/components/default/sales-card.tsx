@@ -1,5 +1,4 @@
 import React, { FC } from 'react';
-import nookies from 'nookies';
 import { request } from '../../utils/request';
 import { Btn } from '../ui/btn';
 import { Card } from '../ui/card';
@@ -17,10 +16,7 @@ type SalesData = {
 };
 
 const fetchSalesData = async () => {
-  const { USER_TOKEN } = nookies.get(null);
-  const { data } = await request.get('orders/admin/total', {
-    headers: { Authorization: 'Bearer ' + USER_TOKEN },
-  });
+  const { data } = await request.get('orders/admin/total');
 
   const salesData: SalesData = {
     orders: {
@@ -33,7 +29,10 @@ const fetchSalesData = async () => {
 };
 
 const SalesCard: FC = () => {
-  const { data, error, isLoading, fetchData } = useFetchData(fetchSalesData);
+  const { data, error, isLoading, fetchData } = useFetchData(
+    fetchSalesData,
+    true,
+  );
 
   return (
     <Card shadow="dark-lg">

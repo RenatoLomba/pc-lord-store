@@ -63,6 +63,13 @@ const AccountMenu: FC = () => {
               <NextLink href="/order_history" passHref>
                 <Link onClick={closeAccountMenu}>Histórico de compras</Link>
               </NextLink>
+              {loggedUser.isAdmin && (
+                <NextLink href="/admin" passHref>
+                  <Link onClick={closeAccountMenu}>
+                    Dashboard de Administrador
+                  </Link>
+                </NextLink>
+              )}
 
               <Btn w="100%" onClick={logoutButtonHandler} buttonStyle="danger">
                 Fazer Logout
