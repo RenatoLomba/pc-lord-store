@@ -23,6 +23,7 @@ import { Title } from '../../components/ui/title';
 import { useMenu } from '../../hooks/useMenu';
 import { useRouter } from 'next/dist/client/router';
 import { Card } from '../../components/ui/card';
+import { StarsRating } from '../../components/ui/stars-rating';
 
 type Product = {
   _id: string;
@@ -72,10 +73,12 @@ const ProductPage: NextPage<ProductPageProps> = ({ product }) => {
             <Title>{product?.name}</Title>
             <PropertyText title="Categoria" text={product?.category} />
             <PropertyText title="Marca" text={product?.brand} />
-            <PropertyText
-              title="Avaliação"
-              text={`${product?.rating} estrelas (${product?.numReviews} avaliações)`}
-            />
+            <PropertyText title="Avaliação">
+              <StarsRating
+                numReviews={product?.numReviews || 0}
+                rating={product?.rating || 0}
+              />
+            </PropertyText>
             <PropertyText title="Descrição" text={product?.description} />
           </VStack>
           <Box as="section">
