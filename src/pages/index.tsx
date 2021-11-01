@@ -21,6 +21,7 @@ type Product = {
   rating: number;
   description: string;
   category: string;
+  numReviews: number;
 };
 
 type HomeProps = {

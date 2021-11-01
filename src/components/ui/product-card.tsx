@@ -16,6 +16,7 @@ import { MdAdd } from 'react-icons/md';
 import { Btn } from './btn';
 import { useCart } from '../../hooks/useCart';
 import { useMenu } from '../../hooks/useMenu';
+import { StarsRating } from './stars-rating';
 
 type Product = {
   _id: string;
@@ -27,6 +28,8 @@ type Product = {
   slug: string;
   description: string;
   category: string;
+  rating: number;
+  numReviews: number;
 };
 
 const ProductCard: FC<{ product: Product }> = ({ product }) => {
@@ -35,6 +38,7 @@ const ProductCard: FC<{ product: Product }> = ({ product }) => {
 
   return (
     <VStack
+      gridGap="1"
       overflow="hidden"
       bgColor={useColorModeValue('white', 'gray.700')}
       borderRadius="lg"
@@ -59,6 +63,7 @@ const ProductCard: FC<{ product: Product }> = ({ product }) => {
           </Box>
         </Link>
       </NextLink>
+      <StarsRating rating={product.rating} numReviews={product.numReviews} />
       <HStack p="0 0 0.5rem 0.5rem" gridGap="4" justifyContent="center">
         <Text>{product.priceFormatted}</Text>
         {product.countInStock > 0 ? (
