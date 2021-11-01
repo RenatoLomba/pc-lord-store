@@ -1,6 +1,9 @@
 import React from 'react';
 import type { AppProps } from 'next/app';
 import { ChakraProvider } from '@chakra-ui/react';
+import 'react-responsive-carousel/lib/styles/carousel.min.css';
+import '../styles/featured-carousel.css';
+
 import { theme } from '../styles/theme';
 import { Header } from '../components/default/header';
 import { CartProvider } from '../contexts/cart-context';
