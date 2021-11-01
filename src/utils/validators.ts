@@ -2,8 +2,8 @@ import validator from 'validator';
 
 type Validator = (value: string, fieldName: string) => string;
 
-const validateRequiredField: Validator = (value, fieldName) =>
-  !value ? `${fieldName} é obrigatório` : '';
+const validateRequiredField: Validator = (value: string | number, fieldName) =>
+  !value && value !== 0 ? `${fieldName} é obrigatório` : '';
 
 const validateEmail: Validator = (value, fieldName) =>
   !validator.isEmail(value) ? `${fieldName} é um email inválido` : '';

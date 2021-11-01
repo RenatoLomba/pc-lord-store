@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { Sidebar } from '../ui/sidebar';
 
 type AdminSidebarProps = {
-  tabActive: 'admin' | 'orders' | 'chat';
+  tabActive: 'admin' | 'orders' | 'chat' | 'products' | 'users';
 };
 
 const AdminSidebar: FC<AdminSidebarProps> = ({ tabActive }) => {
@@ -20,9 +20,19 @@ const AdminSidebar: FC<AdminSidebarProps> = ({ tabActive }) => {
           name: 'Pedidos',
         },
         {
+          href: '/admin/products',
+          isActive: tabActive === 'products',
+          name: 'Produtos',
+        },
+        {
           href: '/admin/chat',
           isActive: tabActive === 'chat',
           name: 'Suporte',
+        },
+        {
+          href: '/admin/users',
+          isActive: tabActive === 'users',
+          name: 'Usuários',
         },
       ]}
     />

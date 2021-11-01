@@ -1,5 +1,4 @@
 import React, { FC } from 'react';
-import nookies from 'nookies';
 import { RepeatIcon } from '@chakra-ui/icons';
 import { Bar } from 'react-chartjs-2';
 import { request } from '../../utils/request';
@@ -10,16 +9,16 @@ import { Btn } from '../ui/btn';
 type SalesData = { _id: string; totalSales: number }[];
 
 const fetchSalesData = async (): Promise<SalesData> => {
-  const { USER_TOKEN } = nookies.get(null);
-  const { data } = await request.get('orders/admin/sales', {
-    headers: { Authorization: 'Bearer ' + USER_TOKEN },
-  });
+  const { data } = await request.get('orders/admin/sales');
 
   return data.orders.salesData;
 };
 
 const SalesChart: FC = () => {
-  const { data, isLoading, error, fetchData } = useFetchData(fetchSalesData);
+  const { data, isLoading, error, fetchData } = useFetchData(
+    fetchSalesData,
+    true,
+  );
 
   if (isLoading) {
     return <Loading />;
