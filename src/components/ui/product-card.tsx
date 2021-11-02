@@ -41,6 +41,11 @@ const ProductCard: FC<{ product: Product }> = ({ product }) => {
       gridGap="1"
       overflow="hidden"
       bgColor={useColorModeValue('white', 'gray.700')}
+      _hover={{
+        transform: 'scale(1.1)',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.5)',
+      }}
+      transition="transform 200ms ease-in-out"
       borderRadius="lg"
       w="100%"
       h="auto"
@@ -50,7 +55,7 @@ const ProductCard: FC<{ product: Product }> = ({ product }) => {
         <Link
           _hover={{
             textDecor: 'none',
-            bgColor: 'gray.300',
+            // bgColor: useColorModeValue('gray.300', 'gray.500'),
           }}
           _focus={{ outline: 0 }}
           flex="1"

@@ -27,16 +27,14 @@ const StarsRating: FC<StarsRatingProps> = ({ rating, numReviews }) => {
 
   return (
     <HStack>
-      {s.map((value) => (
-        <>
-          {value === 0 && (
-            <Icon color="warning.def" w={5} h={5} as={MdStarBorder} />
-          )}
-          {value === 1 && (
-            <Icon color="warning.def" w={5} h={5} as={MdStarHalf} />
-          )}
-          {value === 2 && <Icon color="warning.def" w={5} h={5} as={MdStar} />}
-        </>
+      {s.map((value, index) => (
+        <Icon
+          key={index}
+          color="warning.def"
+          w={5}
+          h={5}
+          as={value === 0 ? MdStarBorder : value === 1 ? MdStarHalf : MdStar}
+        />
       ))}
       <Text>({numReviews})</Text>
     </HStack>
